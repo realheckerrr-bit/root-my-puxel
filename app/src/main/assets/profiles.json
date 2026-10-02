@@ -81,6 +81,14 @@
       "kmi": "android14-6.1"
     },
     {
+      "profileId": "cheetah-CP3A.260905.009",
+      "codename": "cheetah",
+      "kernelRelease": "6.1.162-android14-11",
+      "buildDisplay": "CP3A.260905.009",
+      "exploitAsset": "exploits/cheetah-CP3A.260905.009.so",
+      "kmi": "android14-6.1"
+    },
+    {
       "profileId": "comet-CP2A.260705.006",
       "codename": "comet",
       "kernelRelease": "6.1.157-android14-11",

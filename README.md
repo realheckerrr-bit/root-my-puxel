@@ -56,13 +56,15 @@ Root My Pixel lets you *temporarily* gain root access with ReSukiSU in just one 
 | **Pixel 8**           | `shiba`    | `CP2A.260705.006` | `android14-6.1` | ✅      |
 | **Pixel 8a**          | `akita`    | `CP2A.260805.005` | `android14-6.1` | ✅      |
 | **Pixel 7a**          | `lynx`     | `CP2A.260705.006` | `android14-6.1` | ✅      |
-| **Pixel 7 Pro**       | `cheetah`  | `CP2A.260705.006` | `android14-6.1` | ✅      |
+| **Pixel 7 Pro**       | `cheetah`  | `CP2A.260705.006`<br>`CP3A.260905.009` | `android14-6.1` | ✅      |
 | **Pixel 7**           | `panther`  | `CP2A.260705.006`<br>`BP2A.250705.008` | `android14-6.1` | ✅      |
 | **Pixel 6a**          | `bluejay`  | `CP2A.260705.006`<br>`CP1A.260405.005` | `android14-6.1` | ✅      |
 | **Pixel 6**           | `oriole`   | `CP2A.260705.006` | `android14-6.1` | ✅      |
 | **Pixel 6 Pro**       | `raven`    | `CP2A.260705.006` | `android14-6.1` | ✅      |
 | **Pixel Fold**        | `felix`    | `CP2A.260605.012`<br>`CP2A.260705.006` | `android14-6.1` | ✅      |
 | **Pixel Tablet**      | `tangorpro`| `BP1A.250405.007`<br>`CP2A.260705.006` | `android14-6.1` | ✅      |
+
+`CP3A.260905.009` support is built from the official Pixel 7 Pro OTA and the exact `6.1.162-android14-11-g2ec90535fa34-ab15810641` kernel image. It still needs physical validation on a Pixel 7 Pro running that build.
 
 ---
 
