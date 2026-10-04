@@ -360,12 +360,38 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
         payloads: VerifiedPayloads,
         artifactPaths: TempArtifactPaths,
     ): Result<Unit, PayloadExecutionError> {
-        return when (val result = executeExploitViaShizuku(payloads, artifactPaths)) {
-            is Result.Success -> {
-                appendLog(app.getString(R.string.log_bootstrap_root))
-                Result.Success(Unit)
+        var routeRetry = 0
+        while (true) {
+            when (val result = executeExploitViaShizuku(payloads, artifactPaths)) {
+                is Result.Success -> {
+                    appendLog(app.getString(R.string.log_bootstrap_root))
+                    return Result.Success(Unit)
+                }
+                is Result.Error -> {
+                    /*
+                     * On 6.1 the slide race is the dangerous part and is
+                     * attempted only once per boot.  Once a run has reported
+                     * a verified KASLR base, later failures are main-route
+                     * misses and a fresh process is the safe retry primitive.
+                     * Retry those automatically, but never loop when the
+                     * slide was not verified or the failure is terminal.
+                     */
+                    if (result.error.retryable &&
+                        knownKaslrBase != null &&
+                        routeRetry < MAX_KASLR_ROUTE_RETRIES
+                    ) {
+                        routeRetry++
+                        appendLog(
+                            "[*] Main route miss; automatic retry " +
+                                "$routeRetry/$MAX_KASLR_ROUTE_RETRIES " +
+                                "using KASLR base $knownKaslrBase",
+                        )
+                        delay(KASLR_RETRY_DELAY_MILLIS)
+                        continue
+                    }
+                    return result
+                }
             }
-            is Result.Error -> result
         }
     }
 
@@ -1256,6 +1282,8 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
         private const val COMMAND_TIMEOUT_CODE = 124
         private const val ROOT_PROBE_TIMEOUT_SECONDS = 10L
         private const val ROOT_ID_COMMAND = "id -u"
+        private const val MAX_KASLR_ROUTE_RETRIES = 4
+        private const val KASLR_RETRY_DELAY_MILLIS = 750L
         private val LOG_POLL_INTERVAL = 250.milliseconds
         private const val RESUKISU_PACKAGE = "com.resukisu.resukisu"
         private const val REBOOT_COMMAND =
