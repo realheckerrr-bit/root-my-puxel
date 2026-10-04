@@ -14,7 +14,7 @@ jobs:
   build:
     name: Assemble debug APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
 
     steps:
       - name: Checkout repository
@@ -54,10 +54,56 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
 
       - name: Grant execute permission for gradlew
-        run: chmod +x ./gradlew
+        run: chmod +x ./gradlew ./build-all.sh
 
-      - name: Assemble debug APK
-        run: ./gradlew assembleDebug --stacktrace
+      - name: Audit bundled Pixel target matrix
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          root = Path('.')
+          profiles = json.loads(
+              (root / 'app/src/main/assets/profiles.json').read_text()
+          )['profiles']
+          errors = []
+          seen = set()
+          for profile in profiles:
+              profile_id = profile['profileId']
+              if profile_id in seen:
+                  errors.append(f'duplicate profile id: {profile_id}')
+              seen.add(profile_id)
+
+              asset = root / 'app/src/main/assets' / profile['exploitAsset']
+              if not asset.is_file():
+                  errors.append(f'missing payload asset: {asset}')
+              if asset.name != f'{profile_id}.so':
+                  errors.append(f'asset/profile mismatch: {profile_id} -> {asset.name}')
+
+              header = root / 'Root-My-Pixel-Payloads/src/targets' / profile_id / 'target.h'
+              if not header.is_file():
+                  errors.append(f'missing target header: {header}')
+
+          if errors:
+              raise SystemExit('\n'.join(errors))
+          print(f'Validated {len(profiles)} Pixel profiles and target headers')
+          PY
+
+      - name: Build all payloads and APK
+        run: ./build-all.sh
+
+      - name: Verify session-safe payload contract
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          marker = b'RMP_WORKSPACE_CONTRACT:v1'
+          payloads = sorted(Path('app/src/main/assets/exploits').glob('*.so'))
+          missing = [str(path) for path in payloads if marker not in path.read_bytes()]
+          if missing:
+              raise SystemExit('payloads missing session workspace contract:\n' + '\n'.join(missing))
+          print(f'Verified workspace contract in {len(payloads)} payloads')
+          PY
 
       - name: Verify APK
         run: |

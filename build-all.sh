@@ -44,24 +44,36 @@ CC="$ANDROID_NDK_HOME/toolchains/llvm/prebuilt/$HOST_PLATFORM/bin/aarch64-linux-
 
 # ── Supported devices targets ─────────────────────────────────
 TARGETS=(
-  "rango-CP2A.260705.006"     # Pixel 10 Pro Fold
-  "blazer-CP2A.260705.006"    # Pixel 10 Pro
-  "frankel-CP2A.260705.006"   # Pixel 10
-  "mustang-CP2A.260705.006"   # Pixel 10 Pro XL
-  "comet-CP2A.260705.006"     # Pixel 9 Pro Fold
-  "caiman-CP2A.260705.006"    # Pixel 9 Pro
-  "tegu-CP2A.260705.006"      # Pixel 9a
-  "husky-CP2A.260705.006"     # Pixel 8 Pro
-  "shiba-CP2A.260705.006"     # Pixel 8
-  "akita-CP2A.260805.005"     # Pixel 8a
-  "lynx-CP2A.260705.006"      # Pixel 7a
-  "cheetah-CP2A.260705.006"   # Pixel 7 Pro
-  "cheetah-CP3A.260905.009"   # Pixel 7 Pro (September 2026)
-  "panther-CP2A.260705.006"   # Pixel 7
-  "bluejay-CP2A.260705.006"   # Pixel 6a (Android 17)
-  "bluejay-CP1A.260405.005"   # Pixel 6a (Android 16)
-  "oriole-CP2A.260705.006"    # Pixel 6
-  "raven-CP2A.260705.006"     # Pixel 6 Pro
+  "mustang-CP2A.260705.006"       # Pixel 10 Pro XL
+  "frankel-CP2A.260705.006"       # Pixel 10
+  "rango-CP2A.260705.006"         # Pixel 10 Pro Fold
+  "blazer-CP2A.260705.006"        # Pixel 10 Pro
+  "stallion-CP2A.260805.005"      # Pixel 10a
+  "comet-CP2A.260705.006"         # Pixel 9 Pro Fold
+  "caiman-CP2A.260705.006"        # Pixel 9 Pro
+  "komodo-CP2A.260705.006"        # Pixel 9 Pro XL
+  "tokay-CP2A.260705.006"         # Pixel 9
+  "tokay-AD1A.240905.004"         # Pixel 9 (older build)
+  "tegu-CP2A.260705.006"          # Pixel 9a
+  "husky-CP2A.260705.006"          # Pixel 8 Pro
+  "shiba-CP2A.260705.006"          # Pixel 8
+  "akita-CP2A.260805.005"          # Pixel 8a
+  "lynx-CP2A.260705.006"           # Pixel 7a
+  "cheetah-CP2A.260705.006"        # Pixel 7 Pro
+  "cheetah-CP3A.260905.009"        # Pixel 7 Pro (September 2026)
+  "panther-CP2A.260705.006"        # Pixel 7
+  "panther-BP2A.250705.008"        # Pixel 7 (older build)
+  "bluejay-CP1A.260405.005"        # Pixel 6a
+  "bluejay-CP2A.260705.006"        # Pixel 6a (newer build)
+  "oriole-CP2A.260705.006"         # Pixel 6
+  "raven-CP2A.260705.006"          # Pixel 6 Pro
+  "felix-CP2A.260605.012"          # Pixel Fold
+  "tangorpro-BP1A.250405.007"      # Pixel Tablet
+  "tangorpro-CP2A.260705.006"      # Pixel Tablet (newer build)
+  "grizzly-CD1A.260618.001.C2"     # Pixel 11 Pro
+  "cubs-CD1A.260618.001.C2"        # Pixel 11
+  "kodiak-CD1A.260618.001.C2"      # Pixel 11 Pro XL
+  "yogi-CD1A.260618.001.C3"        # Pixel 11 Pro Fold
 )
 
 echo ""

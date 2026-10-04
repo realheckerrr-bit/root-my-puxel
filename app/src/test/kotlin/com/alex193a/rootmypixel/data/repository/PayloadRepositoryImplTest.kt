@@ -95,7 +95,7 @@ class PayloadRepositoryImplTest {
     }
 
     @Test
-    fun resolveTarget_differentBuildDisplay_stillMatchesProfile() = runBlocking {
+    fun resolveTarget_differentBuildDisplay_isRejected() = runBlocking {
         val snapshot = DeviceSnapshot(
             kernelRelease = "6.6.118-android15-9",
             kernelVersion = "Linux version 6.6.118-android15-9-g690101101069",
@@ -108,8 +108,8 @@ class PayloadRepositoryImplTest {
         )
 
         val result = repository.resolveTarget(snapshot)
-        assertTrue(result is Result.Success)
-        assertEquals("mustang-CP2A.260705.006", (result as Result.Success).data.profileId)
+        assertTrue(result is Result.Error)
+        assertTrue((result as Result.Error).error is PayloadError.UnsupportedError)
     }
 
     @Test

@@ -35,17 +35,42 @@ class PayloadRepositoryImpl(
 
                 // /proc/version appends a Git revision to uname -r (for example,
                 // "6.6.118-android15-8-g<sha>"). Profiles intentionally keep the
-                // stable release prefix.
-                val exactMatch = profiles.find { profile ->
+                // stable release prefix, but the build display is also part of the
+                // payload identity: two builds can share a kernel release while
+                // having different exploit offsets.
+                val kernelMatches = profiles.filter { profile ->
                     targetCodename.isNotEmpty() &&
                         profile.codename.equals(targetCodename, ignoreCase = true) &&
                         (targetKernelRel == profile.kernelRelease ||
                             targetKernelRel.startsWith("${profile.kernelRelease}-"))
                 }
 
-                if (exactMatch != null) {
-                    Result.Success(exactMatch)
-                } else {
+                val buildMatches = kernelMatches.filter { profile ->
+                    targetBuildMatches(profile.buildDisplay, snapshot.buildDisplay)
+                }
+
+                when {
+                    buildMatches.size == 1 -> Result.Success(buildMatches.single())
+                    kernelMatches.size == 1 && snapshot.buildDisplay.isBlank() ->
+                        Result.Error(
+                            PayloadError.UnsupportedError(
+                                "Build display is unavailable; refusing to guess a payload for " +
+                                    "${kernelMatches.single().profileId}",
+                            ),
+                        )
+                    kernelMatches.size > 1 -> Result.Error(
+                        PayloadError.UnsupportedError(
+                            "Multiple payloads match $targetCodename / $targetKernelRel; " +
+                                "exact build display required",
+                        ),
+                    )
+                    kernelMatches.size == 1 -> Result.Error(
+                        PayloadError.UnsupportedError(
+                            "Build ${snapshot.buildDisplay.ifBlank { "<unknown>" }} is not supported " +
+                                "for ${kernelMatches.single().profileId}",
+                        ),
+                    )
+                    else ->
                     Result.Error(
                         PayloadError.UnsupportedError(
                             "No profile for $targetCodename / $targetKernelRel"
@@ -153,4 +178,8 @@ class PayloadRepositoryImpl(
             }
         )
     }
+
+    private fun targetBuildMatches(profileBuild: String, targetBuild: String): Boolean =
+        profileBuild.isNotBlank() && targetBuild.isNotBlank() &&
+            profileBuild.trim().equals(targetBuild.trim(), ignoreCase = true)
 }
