@@ -6,6 +6,12 @@ on:
       - 'cp3a-*'
       - 'cp41-*'
       - 'dp11-*'
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Existing release tag to build
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -22,6 +28,7 @@ jobs:
         with:
           submodules: recursive
           fetch-depth: 0
+          ref: ${{ inputs.release_tag || github.ref }}
 
       - name: Set up JDK 21
         uses: actions/setup-java@v4
@@ -77,12 +84,13 @@ jobs:
       - name: Publish release assets
         env:
           GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag || github.ref_name }}
         run: |
           APK="app/build/outputs/apk/debug/app-debug.apk"
           CHECKSUM="$APK.sha256"
-          gh release create "$GITHUB_REF_NAME" \
+          gh release create "$RELEASE_TAG" \
             --repo "$GITHUB_REPOSITORY" \
             --verify-tag \
-            --title "$GITHUB_REF_NAME debug APK" \
+            --title "$RELEASE_TAG debug APK" \
             --generate-notes \
             "$APK" "$CHECKSUM"
