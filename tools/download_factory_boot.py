@@ -123,7 +123,8 @@ def extract_boot(url: str) -> bytes:
         (
             entry
             for entry in outer_entries
-            if str(entry["name"]).startswith("image-") and str(entry["name"]).endswith(".zip")
+            if Path(str(entry["name"])).name.startswith("image-")
+            and str(entry["name"]).endswith(".zip")
         ),
         None,
     )
