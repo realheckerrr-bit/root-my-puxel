@@ -511,6 +511,7 @@ __attribute__((constructor)) static void load(void) {
   };
 
   pr_success("preload starting pid=%d\n", getpid());
-  run_exploit(1, argv);
+  /* The loader waits on this process.  Propagate the native result so a
+   * transient route miss is retryable instead of looking like success. */
+  _exit(run_exploit(1, argv) == 0 ? 0 : 1);
 }
-
