@@ -53,6 +53,19 @@ jobs:
           "$SDKMANAGER" --install "ndk;28.2.13676358"
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
 
+      - name: Configure stable CI signing
+        env:
+          RMP_CI_KEYSTORE_B64: ${{ secrets.RMP_CI_KEYSTORE_B64 }}
+          RMP_CI_SIGNING_PASSWORD: ${{ secrets.RMP_CI_SIGNING_PASSWORD }}
+        run: |
+          test -n "$RMP_CI_KEYSTORE_B64"
+          test -n "$RMP_CI_SIGNING_PASSWORD"
+          KEYSTORE="$RUNNER_TEMP/root-my-pixel-ci.jks"
+          echo "$RMP_CI_KEYSTORE_B64" | base64 --decode > "$KEYSTORE"
+          chmod 600 "$KEYSTORE"
+          echo "RMP_CI_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
+          echo "RMP_CI_SIGNING_PASSWORD=$RMP_CI_SIGNING_PASSWORD" >> "$GITHUB_ENV"
+
       - name: Grant execute permission for gradlew
         run: chmod +x ./gradlew ./build-all.sh
 
@@ -117,6 +130,11 @@ jobs:
           fi
           echo "APK size: $(stat -c%s "$APK") bytes"
           ls -la "$APK"
+
+      - name: Verify APK signing certificate
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs "$APK"
 
       - name: Upload debug APK
         uses: actions/upload-artifact@v4

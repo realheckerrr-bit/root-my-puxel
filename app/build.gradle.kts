@@ -4,9 +4,31 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+val ciKeystorePath = System.getenv("RMP_CI_KEYSTORE_PATH")
+val ciSigningPassword = System.getenv("RMP_CI_SIGNING_PASSWORD")
+
 android {
     namespace = "com.alex193a.rootmypixel"
     compileSdk = 37
+
+    signingConfigs {
+        if (ciKeystorePath != null && ciSigningPassword != null) {
+            create("ciDebug") {
+                storeFile = file(ciKeystorePath)
+                storePassword = ciSigningPassword
+                keyAlias = "root-my-pixel-ci"
+                keyPassword = ciSigningPassword
+            }
+        }
+    }
+
+    buildTypes {
+        getByName("debug") {
+            if (ciKeystorePath != null && ciSigningPassword != null) {
+                signingConfig = signingConfigs.getByName("ciDebug")
+            }
+        }
+    }
 
     defaultConfig {
         applicationId = "com.alex193a.rootmypixel"
