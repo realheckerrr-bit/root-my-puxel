@@ -1,0 +1,88 @@
+name: Build and publish APK release
+
+on:
+  push:
+    tags:
+      - 'cp3a-*'
+      - 'cp41-*'
+      - 'dp11-*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and publish signed debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-37.0 build-tools;37.0.0'
+
+      - name: Install NDK required by AGP 9.3.1
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          "$SDKMANAGER" --install "ndk;28.2.13676358"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+
+      - name: Configure stable CI signing
+        env:
+          RMP_CI_KEYSTORE_B64: ${{ secrets.RMP_CI_KEYSTORE_B64 }}
+          RMP_CI_SIGNING_PASSWORD: ${{ secrets.RMP_CI_SIGNING_PASSWORD }}
+        run: |
+          test -n "$RMP_CI_KEYSTORE_B64"
+          test -n "$RMP_CI_SIGNING_PASSWORD"
+          KEYSTORE="$RUNNER_TEMP/root-my-pixel-ci.jks"
+          echo "$RMP_CI_KEYSTORE_B64" | base64 --decode > "$KEYSTORE"
+          chmod 600 "$KEYSTORE"
+          echo "RMP_CI_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
+          echo "RMP_CI_SIGNING_PASSWORD=$RMP_CI_SIGNING_PASSWORD" >> "$GITHUB_ENV"
+
+      - name: Build every catalog target and the APK
+        run: |
+          chmod +x ./gradlew ./build-all.sh
+          ./build-all.sh
+
+      - name: Run JVM unit tests
+        run: ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Verify APK signature and write checksum
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          test -f "$APK"
+          "$ANDROID_HOME/build-tools/37.0.0/apksigner" verify --verbose --print-certs "$APK"
+          sha256sum "$APK" > "$APK.sha256"
+          cat "$APK.sha256"
+
+      - name: Publish release assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          APK="app/build/outputs/apk/debug/app-debug.apk"
+          CHECKSUM="$APK.sha256"
+          gh release create "$GITHUB_REF_NAME" \
+            --repo "$GITHUB_REPOSITORY" \
+            --verify-tag \
+            --title "$GITHUB_REF_NAME debug APK" \
+            --generate-notes \
+            "$APK" "$CHECKSUM"

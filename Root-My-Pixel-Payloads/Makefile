@@ -36,7 +36,29 @@ ROOT_HELPER := $(OUTDIR)/cve-2026-43499-root
 # ---------------------------------------------------------------------------
 sixone-targets := stallion-CP2A.260805.005 raven-CP2A.260705.006 oriole-CP2A.260705.006 bluejay-CP1A.260405.005 bluejay-CP2A.260705.006 shiba-CP2A.260705.006 husky-CP2A.260705.006 tokay-CP2A.260705.006 tokay-AD1A.240905.004 komodo-CP2A.260705.006 tegu-CP2A.260705.006 lynx-CP2A.260705.006 panther-CP2A.260705.006 panther-BP2A.250705.008 cheetah-CP2A.260705.006 cheetah-CP3A.260905.009 comet-CP2A.260705.006 akita-CP2A.260805.005 caiman-CP2A.260705.006 tangorpro-BP1A.250405.007 tangorpro-CP2A.260705.006 felix-CP2A.260605.012 akita-CP3A.260905.009 bluejay-CP3A.260905.009 caiman-CP3A.260905.009 comet-CP3A.260905.009 felix-CP3A.260905.009 husky-CP3A.260905.009 komodo-CP3A.260905.009 lynx-CP3A.260905.009 oriole-CP3A.260905.009 panther-CP3A.260905.009 raven-CP3A.260905.009 shiba-CP3A.260905.009 stallion-CP3A.260905.009 tangorpro-CP3A.260905.009 tegu-CP3A.260905.009 tokay-CP3A.260905.009
 sixtwelve-targets := grizzly-CD1A.260618.001.C2 cubs-CD1A.260618.001.C2 kodiak-CD1A.260618.001.C2 yogi-CD1A.260618.001.C3
-ifneq ($(filter $(TARGET),$(sixone-targets)),)
+
+# build-all.sh passes KMI from profiles.json. That metadata is the source of
+# truth for new profiles; the target lists below remain a compatibility path
+# for direct `make TARGET=...` calls made without KMI.
+ifneq ($(strip $(KMI)),)
+ifneq ($(filter android14-6.1,$(KMI)),)
+KERNEL_SOURCE_SET := sixone
+else ifneq ($(filter android16-6.12,$(KMI)),)
+KERNEL_SOURCE_SET := sixtwelve
+else ifneq ($(filter android15-6.6,$(KMI)),)
+KERNEL_SOURCE_SET := sixsix
+else
+$(error unsupported KMI '$(KMI)' for TARGET=$(TARGET))
+endif
+else ifneq ($(filter $(TARGET),$(sixone-targets)),)
+KERNEL_SOURCE_SET := sixone
+else ifneq ($(filter $(TARGET),$(sixtwelve-targets)),)
+KERNEL_SOURCE_SET := sixtwelve
+else
+KERNEL_SOURCE_SET := sixsix
+endif
+
+ifeq ($(KERNEL_SOURCE_SET),sixone)
 SLIDE_SRC := src/61/slide61.c
 APP_PRELOAD_SRCS := \
   src/61/main.c \
@@ -48,7 +70,7 @@ APP_PRELOAD_SRCS := \
   src/61/preload.c
 COMMON_INC := -Isrc/61 -Isrc
 COMMON_DEPS := src/61/common.h src/workspace.h src/61/kernelsnitch/*.h
-else ifneq ($(filter $(TARGET),$(sixtwelve-targets)),)
+else ifeq ($(KERNEL_SOURCE_SET),sixtwelve)
 SLIDE_SRC := src/612/slide612.c
 APP_PRELOAD_SRCS := \
   src/612/main.c \

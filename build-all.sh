@@ -96,6 +96,33 @@ TARGETS=(
   "yogi-CD1A.260618.001.C3"        # Pixel 11 Pro Fold
 )
 
+# Use the APK catalog as the source of truth for the native build. Keep the
+# legacy list above only as readable documentation of the device families;
+# it is deliberately not used to select build targets.
+mapfile -t CATALOG_TARGETS < <(python3 - "$APP/src/main/assets/profiles.json" <<'PY'
+import json
+import sys
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    profiles = json.load(stream)["profiles"]
+
+seen = set()
+for profile in profiles:
+    target = profile["profileId"]
+    if target in seen:
+        raise SystemExit(f"duplicate profile id: {target}")
+    seen.add(target)
+    print(f"{target}\t{profile['kmi']}")
+PY
+)
+
+if ((${#CATALOG_TARGETS[@]} == 0)); then
+  echo "ERROR: profiles.json contains no native targets" >&2
+  exit 1
+fi
+TARGETS=("${CATALOG_TARGETS[@]}")
+echo "[*] Building ${#TARGETS[@]} native targets from profiles.json"
+
 echo ""
 echo "═══ Step 1/3: Build native helper (libcve43499root.so) ═══"
 echo ""
@@ -110,9 +137,10 @@ strings "$JNILIBS/libcve43499root.so" | grep -q "run-payload" && \
 echo ""
 echo "═══ Step 2/3: Build exploit payloads ═══"
 echo ""
-for TARGET in "${TARGETS[@]}"; do
+for TARGET_RECORD in "${TARGETS[@]}"; do
+  IFS=$'\t' read -r TARGET KMI <<< "$TARGET_RECORD"
   echo "--- $TARGET ---"
-  make -C "$PAYLOADS" TARGET="$TARGET" ANDROID_NDK_HOME="$ANDROID_NDK_HOME" release
+  make -C "$PAYLOADS" TARGET="$TARGET" KMI="$KMI" ANDROID_NDK_HOME="$ANDROID_NDK_HOME" release
   SRC="$PAYLOADS/build/$TARGET/cve-2026-43499-app.release.so"
   if [ -f "$SRC" ]; then
     cp "$SRC" "$ASSETS/$TARGET.so"
