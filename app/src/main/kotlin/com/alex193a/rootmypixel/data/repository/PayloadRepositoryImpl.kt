@@ -70,8 +70,7 @@ class PayloadRepositoryImpl(
                                 "for ${kernelMatches.single().profileId}",
                         ),
                     )
-                    else ->
-                    Result.Error(
+                    else -> Result.Error(
                         PayloadError.UnsupportedError(
                             "No profile for $targetCodename / $targetKernelRel"
                         )

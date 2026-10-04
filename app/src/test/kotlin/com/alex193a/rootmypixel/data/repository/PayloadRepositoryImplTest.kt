@@ -27,6 +27,14 @@ class PayloadRepositoryImplTest {
             kmi = "android15-6.6",
         ),
         BundledProfileDto(
+            profileId = "mustang-CP2A.260805.005",
+            codename = "mustang",
+            kernelRelease = "6.6.118-android15-9",
+            buildDisplay = "CP2A.260805.005",
+            exploitAsset = "exploits/mustang-CP2A.260805.005.so",
+            kmi = "android15-6.6",
+        ),
+        BundledProfileDto(
             profileId = "frankel-CP2A.260605.012",
             codename = "frankel",
             kernelRelease = "6.6.89",
