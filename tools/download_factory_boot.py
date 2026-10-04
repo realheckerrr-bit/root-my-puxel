@@ -12,6 +12,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import struct
 import urllib.request
 import zlib
@@ -36,12 +37,18 @@ def request(url: str, start: int, end: int) -> bytes:
 
 
 def remote_size(url: str) -> int:
-    req = urllib.request.Request(url, method="HEAD")
+    # Google occasionally serves a stale Content-Length for HEAD while the
+    # ranged response carries the current archive size.  Use Content-Range
+    # from a one-byte request so ZIP offsets always refer to the same object.
+    req = urllib.request.Request(url, headers={"Range": "bytes=0-0"})
     with urllib.request.urlopen(req) as response:
-        value = response.headers.get("Content-Length")
-        if not value:
-            raise RuntimeError(f"no Content-Length for {url}")
-        return int(value)
+        content_range = response.headers.get("Content-Range", "")
+        match = re.fullmatch(r"bytes 0-0/(\d+)", content_range)
+        if not match:
+            raise RuntimeError(f"no usable Content-Range for {url}: {content_range!r}")
+        if response.status != 206 or len(response.read()) != 1:
+            raise RuntimeError(f"range probe failed for {url}")
+        return int(match.group(1))
 
 
 def central_directory(url: str, archive_start: int, archive_size: int) -> list[dict[str, int | str]]:
