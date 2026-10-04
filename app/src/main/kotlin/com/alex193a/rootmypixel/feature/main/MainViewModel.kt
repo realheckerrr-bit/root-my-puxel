@@ -686,6 +686,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         )
     }
 
+    private fun appendLog(message: String) {
+        mutableState.value = mutableState.value.copy(
+            log = (mutableState.value.log + "\n" + message).trim(),
+        )
+    }
+
     companion object {
         private const val SHIZUKU_PERMISSION_CODE = 101
         private const val UPTIME_THRESHOLD_MS = 5 * 60 * 1000L // 5 minutes
