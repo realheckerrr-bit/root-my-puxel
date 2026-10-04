@@ -101,9 +101,13 @@ class BootImageReader(private val resolver: ContentResolver) {
             require(kernelSize in 1..MAX_BOOT_BYTES) { "Invalid kernel size: $kernelSize" }
             val headerVersion = image.le32(40)
             val kernelOffset = if (headerVersion >= 3) {
-                // v3/v4 store header_size at 36; fall back to 4096 when zero.
-                val headerSize = image.le32(36)
-                if (headerSize in 512..65536) headerSize else 4096
+                /*
+                 * Boot image v3/v4 always place the kernel at the first
+                 * 4-KiB page.  The v3/v4 header_size field is not the
+                 * kernel offset; treating it as one can silently slice the
+                 * compressed kernel from the middle of the header.
+                 */
+                4096
             } else {
                 val pageSize = image.le32(36)
                 require(pageSize in 512..65536 && Integer.bitCount(pageSize) == 1) {
@@ -262,4 +266,3 @@ private fun InputStream.readBytesBounded(max: Long): ByteArray {
 private fun ByteArray.le32(offset: Int): Int =
     (this[offset].toInt() and 255) or ((this[offset + 1].toInt() and 255) shl 8) or
         ((this[offset + 2].toInt() and 255) shl 16) or ((this[offset + 3].toInt() and 255) shl 24)
-

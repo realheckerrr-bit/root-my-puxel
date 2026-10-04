@@ -124,6 +124,8 @@ class KallsymsTest {
         val image = ByteArray(4096 + 100)
         "ANDROID!".toByteArray().copyInto(image, 0)
         image[8] = 100 // kernel size low byte
+        intLE(1584).copyInto(image, 20) // v3/v4 header_size
+        intLE(1584).copyInto(image, 36) // reserved field: must not be used as offset
         image[40] = 3 // header version v3
         for (i in 0 until 100) image[4096 + i] = 0x5a
         val kernel = BootImageReader.parseBootImage(image)
