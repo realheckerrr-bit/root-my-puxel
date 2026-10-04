@@ -312,5 +312,13 @@ int run_exploit(int argc, char **argv) {
     SYSCHK(waitpid(pipe_prepare_child, NULL, 0));
   }
   sleep(5);
-  return 0;
+  /*
+   * The 6.1 route is intentionally a single attempt per process: a fresh
+   * process gives the allocator a new race window, while retrying the route
+   * with the old waiter/futex threads would leave stale kernel state behind.
+   * Returning success here unconditionally made the app treat a failed root
+   * attempt as terminal and hide its Retry action.  Propagate the verified
+   * root result so the caller can safely start a fresh attempt.
+   */
+  return root_child_done ? 0 : 1;
 }

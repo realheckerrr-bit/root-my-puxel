@@ -69,6 +69,13 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
     private var discoveryJob: Job? = null
     private var installJob: Job? = null
     private var unrootCapabilityJob: Job? = null
+    /**
+     * A successful slide is valid for the lifetime of the current boot. Keep
+     * it across the Retry action so 6.1 targets can retry only the safer main
+     * route instead of repeating the crash-prone slide race. The ViewModel is
+     * recreated after a device reboot, which naturally discards this value.
+     */
+    private var knownKaslrBase: String? = null
 
     val state: StateFlow<InstallUiState> = mutableState.asStateFlow()
     val targetCatalog: StateFlow<TargetCatalogUiState> = mutableTargetCatalog.asStateFlow()
@@ -386,6 +393,7 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
                 exploitBytes,
                 helperBytes,
                 artifactPaths.workDir,
+                knownKaslrBase.orEmpty(),
             )
 
             val startedAt = SystemClock.elapsedRealtime()
@@ -426,6 +434,8 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
             if (finalLog.isNotBlank()) {
                 publishLog(logPrefix, finalLog)
             }
+
+            rememberKaslrBase(finalLog)
 
             if (exitCode != 0) {
                 return Result.Error(
@@ -499,6 +509,21 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
     }
 
     // Shizuku helpers
+
+    private fun rememberKaslrBase(rawLog: String) {
+        val linePattern = Regex(
+            "pipe-physrw-summary\\b[^\\n]*\\bkaslr=1\\b[^\\n]*\\bbase=([0-9a-fA-F]{16})\\b",
+        )
+        val base = rawLog.lineSequence()
+            .map(PayloadResultParser::sanitizeForDisplay)
+            .mapNotNull { line -> linePattern.find(line)?.groupValues?.get(1) }
+            .firstOrNull()
+            ?.let { "0x$it" }
+        if (base != null && base != knownKaslrBase) {
+            knownKaslrBase = base
+            appendLog("[+] KASLR base saved for Retry: $base")
+        }
+    }
 
     private fun hasShizukuPermission(): Boolean {
         return try {
