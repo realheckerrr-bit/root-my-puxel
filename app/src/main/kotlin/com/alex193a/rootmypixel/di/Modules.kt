@@ -4,12 +4,14 @@ import com.alex193a.rootmypixel.data.datasource.PayloadLocalDataSource
 import com.alex193a.rootmypixel.data.repository.PayloadRepositoryImpl
 import com.alex193a.rootmypixel.domain.repository.PayloadRepository
 import com.alex193a.rootmypixel.domain.usecase.DownloadPayloadsUseCase
+import com.alex193a.rootmypixel.domain.usecase.ExtractBootImageUseCase
 import com.alex193a.rootmypixel.domain.usecase.ResolveTargetUseCase
 import org.koin.dsl.module
 
 val domainModule = module {
     single { ResolveTargetUseCase(get()) }
     single { DownloadPayloadsUseCase(get()) }
+    single { ExtractBootImageUseCase(get()) }
 }
 
 val dataModule = module {

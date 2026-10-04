@@ -1,5 +1,6 @@
 package com.alex193a.rootmypixel.domain.usecase
 
+import android.net.Uri
 import com.alex193a.rootmypixel.core.Result
 import com.alex193a.rootmypixel.domain.model.DeviceSnapshot
 import com.alex193a.rootmypixel.domain.model.TargetProfile
@@ -57,6 +58,13 @@ class UseCasesTest {
         override suspend fun loadTargets(): Result<List<TargetProfile>, PayloadError> {
             return Result.Success(listOf(fakeProfile))
         }
+
+        override suspend fun extractFromBootImage(
+            uri: Uri,
+            onProgress: (String) -> Unit,
+        ): Result<TargetProfile, PayloadError> = Result.Error(
+            PayloadError.UnsupportedError("not used in this fake"),
+        )
     }
 
     @Test

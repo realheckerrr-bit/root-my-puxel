@@ -1,5 +1,10 @@
 package com.alex193a.rootmypixel.data.repository
 
+import android.net.Uri
+import android.util.Base64
+import com.alex193a.rootmypixel.core.boot.BootImageReader
+import com.alex193a.rootmypixel.core.kallsyms.KallsymsScanner
+import com.alex193a.rootmypixel.core.kallsyms.SymbolResolver
 import com.alex193a.rootmypixel.core.Result
 import com.alex193a.rootmypixel.data.datasource.PayloadLocalDataSource
 import com.alex193a.rootmypixel.data.model.toDomain
@@ -21,6 +26,12 @@ class PayloadRepositoryImpl(
 ) : PayloadRepository {
 
     private var cachedProfiles: List<TargetProfile>? = null
+    private val customProfiles = mutableMapOf<String, TargetProfile>()
+    private val customConfigs = mutableMapOf<String, File>()
+
+    init {
+        loadCustomProfiles()
+    }
 
     override suspend fun resolveTarget(
         snapshot: DeviceSnapshot,
@@ -28,7 +39,7 @@ class PayloadRepositoryImpl(
         return when (val result = loadCachedProfiles()) {
             is Result.Error -> result
             is Result.Success -> {
-                val profiles = result.data
+                val profiles = result.data + customProfiles.values
 
                 val targetCodename = snapshot.device.trim()
                 val targetKernelRel = snapshot.kernelRelease.trim()
@@ -83,6 +94,7 @@ class PayloadRepositoryImpl(
     override suspend fun resolveTarget(
         profileId: String,
     ): Result<TargetProfile, PayloadError> {
+        customProfiles[profileId]?.let { return Result.Success(it) }
         return when (val result = loadCachedProfiles()) {
             is Result.Error -> result
             is Result.Success -> {
@@ -125,18 +137,19 @@ class PayloadRepositoryImpl(
             return Result.Error(PayloadError.ExtractionError("Unable to make exploit executable"))
         }
 
-        // Extract ksud binary from assets
-        // One binary covers every KMI: it embeds a kernelsu.ko per KMI and picks
-        // between them from the --kmi it is passed at late-load, which is where
-        // profile.kmi is used.
-        val ksudAssetPath = "${PayloadLocalDataSource.KSUD_ASSET_PREFIX}ksud"
+        // Dynamic profiles use the KMI-specific asset. Keep the legacy fallback
+        // for older APKs and statically bundled payloads.
+        val ksudAssetPath = "${PayloadLocalDataSource.KSUD_ASSET_PREFIX}ksud-${profile.kmi}"
         val ksudFile = File(payloadDir, "ksud")
         ksudFile.delete()
-        val ksudResult = localDataSource.extractAsset(
-            assetPath = ksudAssetPath,
-            destination = ksudFile,
-            onProgress = onProgress,
-        )
+        var ksudResult = localDataSource.extractAsset(ksudAssetPath, ksudFile, onProgress)
+        if (ksudResult.isFailure) {
+            ksudResult = localDataSource.extractAsset(
+                assetPath = "${PayloadLocalDataSource.KSUD_ASSET_PREFIX}ksud",
+                destination = ksudFile,
+                onProgress = onProgress,
+            )
+        }
         if (ksudResult.isFailure) {
             exploitFile.delete()
             return Result.Error(
@@ -152,11 +165,99 @@ class PayloadRepositoryImpl(
         }
 
         onProgress("Payloads ready")
-        return Result.Success(VerifiedPayloads(exploit = exploitFile, kernelSu = ksudFile, kmi = profile.kmi))
+        return Result.Success(
+            VerifiedPayloads(
+                exploit = exploitFile,
+                kernelSu = ksudFile,
+                kmi = profile.kmi,
+                targetConfig = customConfigs[profile.profileId],
+            ),
+        )
     }
 
     override suspend fun loadTargets(): Result<List<TargetProfile>, PayloadError> {
-        return loadCachedProfiles()
+        return when (val result = loadCachedProfiles()) {
+            is Result.Error -> result
+            is Result.Success -> Result.Success(result.data + customProfiles.values)
+        }
+    }
+
+    override suspend fun extractFromBootImage(
+        uri: Uri,
+        onProgress: (String) -> Unit,
+    ): Result<TargetProfile, PayloadError> = try {
+        val kernel = BootImageReader(localDataSource.contentResolver).readKernel(uri, onProgress)
+        onProgress("Analyzing kernel symbols…")
+        val release = Regex("Linux version\\s+([^\\s]+)")
+            .find(String(kernel, Charsets.ISO_8859_1))
+            ?.groupValues
+            ?.get(1)
+            ?: throw IllegalArgumentException("Kernel release banner not found")
+        val started = System.currentTimeMillis()
+        val symbols = KallsymsScanner().resolve(kernel, SymbolResolver.requiredSymbols)
+        val elapsed = System.currentTimeMillis() - started
+        require(elapsed <= KALLSYMS_BUDGET_MS) {
+            "Kernel symbol analysis exceeded time budget ($elapsed ms)"
+        }
+        val config = SymbolResolver.toConfig(release, symbols)
+        val kmi = if (config.kernelFamily == 61) "android14-6.1" else "android15-6.6"
+        val id = "custom-${release.replace(Regex("[^A-Za-z0-9._-]"), "_")}"
+        val profile = TargetProfile(
+            profileId = id,
+            codename = "custom",
+            kernelRelease = release,
+            buildDisplay = id,
+            exploitAsset = "exploits/cve-2026-43499-generic-${config.kernelFamily / 10}.${config.kernelFamily % 10}.so",
+            kmi = kmi,
+        )
+        val customDir = File(filesDir, "custom_profiles").apply { mkdirs() }
+        val configFile = File(customDir, "$id.bin").apply { writeBytes(config.toBinary()) }
+        val metadata = """
+            {"profileId":"$id","codename":"custom","kernelRelease":"$release",
+             "buildDisplay":"$id","exploitAsset":"${profile.exploitAsset}",
+             "kmi":"$kmi","config":"${Base64.encodeToString(config.toBinary(), Base64.NO_WRAP)}"}
+        """.trimIndent()
+        File(customDir, "$id.json").writeText(metadata)
+        customProfiles[id] = profile
+        customConfigs[id] = configFile
+        cachedProfiles = null
+        onProgress("Runtime target generated")
+        Result.Success(profile)
+    } catch (error: Throwable) {
+        Result.Error(
+            PayloadError.ExtractionError(
+                error.message ?: "Failed to analyze boot image",
+            ),
+        )
+    }
+
+    private fun loadCustomProfiles() {
+        val dir = File(filesDir, "custom_profiles")
+        if (!dir.isDirectory) return
+        dir.listFiles { file -> file.extension == "json" }?.forEach { file ->
+            try {
+                val raw = file.readText()
+                fun value(key: String): String? =
+                    Regex("\\\"$key\\\":\\\"([^\\\"]+)\\\"").find(raw)?.groupValues?.get(1)
+                val id = value("profileId") ?: return@forEach
+                val profile = TargetProfile(
+                    profileId = id,
+                    codename = value("codename") ?: "custom",
+                    kernelRelease = value("kernelRelease") ?: return@forEach,
+                    buildDisplay = value("buildDisplay") ?: id,
+                    exploitAsset = value("exploitAsset") ?: "exploits/cve-2026-43499-generic-6.1.so",
+                    kmi = value("kmi") ?: "android14-6.1",
+                )
+                customProfiles[id] = profile
+                value("config")?.let { encoded ->
+                    val configFile = File(dir, "$id.bin")
+                    if (!configFile.exists()) configFile.writeBytes(Base64.decode(encoded, Base64.NO_WRAP))
+                    customConfigs[id] = configFile
+                }
+            } catch (_: Throwable) {
+                // Ignore a partially written custom profile and keep bundled targets usable.
+            }
+        }
     }
 
     private fun loadCachedProfiles(): Result<List<TargetProfile>, PayloadError> {
@@ -181,4 +282,8 @@ class PayloadRepositoryImpl(
     private fun targetBuildMatches(profileBuild: String, targetBuild: String): Boolean =
         profileBuild.isNotBlank() && targetBuild.isNotBlank() &&
             profileBuild.trim().equals(targetBuild.trim(), ignoreCase = true)
+
+    companion object {
+        private const val KALLSYMS_BUDGET_MS = 30_000L
+    }
 }

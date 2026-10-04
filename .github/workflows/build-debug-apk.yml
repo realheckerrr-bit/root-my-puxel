@@ -114,11 +114,35 @@ jobs:
           from pathlib import Path
 
           marker = b'RMP_WORKSPACE_CONTRACT:v1'
-          payloads = sorted(Path('app/src/main/assets/exploits').glob('*.so'))
+          payloads = sorted(
+              path for path in Path('app/src/main/assets/exploits').glob('*.so')
+              if not path.name.startswith('cve-2026-43499-generic-')
+          )
           missing = [str(path) for path in payloads if marker not in path.read_bytes()]
           if missing:
               raise SystemExit('payloads missing session workspace contract:\n' + '\n'.join(missing))
           print(f'Verified workspace contract in {len(payloads)} payloads')
+          PY
+
+      - name: Verify runtime generic payload fallback
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          for family in ('6.1', '6.6'):
+              payload = Path(f'app/src/main/assets/exploits/cve-2026-43499-generic-{family}.so')
+              if not payload.is_file():
+                  raise SystemExit(f'missing generic payload: {payload}')
+              data = payload.read_bytes()
+              for marker in (b'target_config', b'CVE43499_CONFIG_PATH'):
+                  if marker not in data:
+                      raise SystemExit(f'{payload} missing marker {marker!r}')
+
+          for kmi in ('android14-6.1', 'android15-6.6'):
+              ksud = Path(f'app/src/main/assets/ksud/ksud-{kmi}')
+              if not ksud.is_file() or ksud.stat().st_size < 1_000_000:
+                  raise SystemExit(f'missing or truncated generic ksud: {ksud}')
+          print('Verified generic runtime payloads for 6.1 and 6.6')
           PY
 
       - name: Verify APK

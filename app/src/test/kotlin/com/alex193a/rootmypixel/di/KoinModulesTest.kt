@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import com.alex193a.rootmypixel.domain.repository.PayloadRepository
 import com.alex193a.rootmypixel.domain.usecase.DownloadPayloadsUseCase
+import com.alex193a.rootmypixel.domain.usecase.ExtractBootImageUseCase
 import com.alex193a.rootmypixel.domain.usecase.ResolveTargetUseCase
 import org.junit.After
 import org.junit.Assert.assertNotNull
@@ -48,5 +49,8 @@ class KoinModulesTest {
 
         val downloadUseCase: DownloadPayloadsUseCase = get(DownloadPayloadsUseCase::class.java)
         assertNotNull(downloadUseCase)
+
+        val extractUseCase: ExtractBootImageUseCase = get(ExtractBootImageUseCase::class.java)
+        assertNotNull(extractUseCase)
     }
 }

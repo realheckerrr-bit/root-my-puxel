@@ -1,5 +1,6 @@
 package com.alex193a.rootmypixel.domain.repository
 
+import android.net.Uri
 import com.alex193a.rootmypixel.core.Error
 import com.alex193a.rootmypixel.core.Result
 import com.alex193a.rootmypixel.domain.model.DeviceSnapshot
@@ -34,6 +35,15 @@ interface PayloadRepository {
      * Load all available target profiles bundled in the app.
      */
     suspend fun loadTargets(): Result<List<TargetProfile>, PayloadError>
+
+    /**
+     * Reads a boot image/factory image selected by the user and derives a
+     * runtime payload configuration from its kernel kallsyms table.
+     */
+    suspend fun extractFromBootImage(
+        uri: Uri,
+        onProgress: (String) -> Unit = {},
+    ): Result<TargetProfile, PayloadError>
 }
 
 sealed interface PayloadError : Error {

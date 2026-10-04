@@ -409,8 +409,13 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
             val logPrefix = mutableState.value.log
             val exploitBytes = payloads.exploit.readBytes()
             val helperBytes = helper.readBytes()
-            require(TempArtifactWorkspaceContract.isSupported(exploitBytes)) {
-                app.getString(R.string.error_payload_workspace_contract)
+            val configBytes = payloads.targetConfig?.readBytes() ?: ByteArray(0)
+            if (payloads.targetConfig == null) {
+                require(TempArtifactWorkspaceContract.isSupported(exploitBytes)) {
+                    app.getString(R.string.error_payload_workspace_contract)
+                }
+            } else {
+                appendLog("[*] Using generic runtime payload configuration")
             }
             require(TempArtifactWorkspaceContract.isSupported(helperBytes)) {
                 app.getString(R.string.error_helper_workspace_contract)
@@ -418,6 +423,7 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
             handle.service.startExploit(
                 exploitBytes,
                 helperBytes,
+                configBytes,
                 artifactPaths.workDir,
                 knownKaslrBase.orEmpty(),
             )

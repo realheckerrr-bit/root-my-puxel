@@ -3,6 +3,7 @@ package com.alex193a.rootmypixel.feature.main
 import android.app.Application
 import android.content.ComponentName
 import android.content.Intent
+import android.net.Uri
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
 import android.os.Handler
@@ -19,6 +20,7 @@ import com.alex193a.rootmypixel.domain.model.InstallPhase
 import com.alex193a.rootmypixel.domain.model.InstallUiState
 import com.alex193a.rootmypixel.domain.model.UnrootWarningUi
 import com.alex193a.rootmypixel.domain.usecase.ResolveTargetUseCase
+import com.alex193a.rootmypixel.domain.usecase.ExtractBootImageUseCase
 import com.alex193a.rootmypixel.feature.install.InstallActivity
 import com.alex193a.rootmypixel.shizuku.ExploitService
 import com.alex193a.rootmypixel.shizuku.IExploitService
@@ -49,6 +51,9 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val resolveTargetUseCase: ResolveTargetUseCase by lazy {
         get(ResolveTargetUseCase::class.java)
     }
+    private val extractBootImageUseCase: ExtractBootImageUseCase by lazy {
+        get(ExtractBootImageUseCase::class.java)
+    }
     private val artifactSessionStore = TempArtifactSessionStore(app)
 
     private val mutableState = MutableStateFlow(InstallUiState())
@@ -56,6 +61,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     private val mutableReSukiSuInstalled = MutableStateFlow(false)
     private val mutableUptimeExceeded = MutableStateFlow(false)
     private var refreshJob: Job? = null
+    private var importedProfileId: String? = null
 
     val state: StateFlow<InstallUiState> = mutableState.asStateFlow()
     val shizukuAvailable: StateFlow<Boolean> = mutableShizukuAvailable.asStateFlow()
@@ -201,9 +207,49 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun install() {
         val intent = Intent(app, InstallActivity::class.java).apply {
+            importedProfileId?.let { putExtra(InstallActivity.EXTRA_PROFILE_ID, it) }
             addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
         }
         app.startActivity(intent)
+    }
+
+    fun importBootImage(uri: Uri) {
+        if (mutableState.value.busy) return
+        refreshJob?.cancel()
+        refreshJob = viewModelScope.launch(Dispatchers.IO) {
+            mutableState.value = mutableState.value.copy(
+                phase = InstallPhase.Checking,
+                message = "Analyzing boot image…",
+            )
+            try {
+                when (val result = extractBootImageUseCase(uri) { message ->
+                    appendLog("[*] $message")
+                }) {
+                    is Result.Success -> {
+                        importedProfileId = result.data.profileId
+                        mutableState.value = mutableState.value.copy(
+                            phase = InstallPhase.Ready,
+                            message = "Runtime target ready",
+                        )
+                        appendLog("[+] Imported target: ${result.data.profileId}")
+                        appendLog("[*] Press Install to use the generic runtime payload")
+                    }
+                    is Result.Error -> {
+                        mutableState.value = mutableState.value.copy(
+                            phase = InstallPhase.Failed,
+                            message = "Boot image analysis failed",
+                        )
+                        appendLog("[-] ${result.error.message}")
+                    }
+                }
+            } catch (error: Throwable) {
+                mutableState.value = mutableState.value.copy(
+                    phase = InstallPhase.Failed,
+                    message = "Boot image analysis failed",
+                )
+                appendLog("[-] ${error.message ?: error.javaClass.simpleName}")
+            }
+        }
     }
 
     fun softReboot() {

@@ -1,12 +1,15 @@
 package com.alex193a.rootmypixel.feature.main
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -95,6 +98,7 @@ class MainActivity : ComponentActivity() {
                     uptimeExceeded = uptimeExceeded,
                     onRefresh = { installViewModel.refresh() },
                     onInstall = { installViewModel.install() },
+                    onImportBootImage = installViewModel::importBootImage,
                     onUnroot = { installViewModel.unrootAndReboot() },
                     onCancelUnrootReboot = installViewModel::cancelUnrootReboot,
                     onRebootAnyway = installViewModel::continueUnrootReboot,
@@ -119,12 +123,18 @@ private fun MainScreen(
     uptimeExceeded: Boolean,
     onRefresh: () -> Unit,
     onInstall: () -> Unit,
+    onImportBootImage: (Uri) -> Unit,
     onUnroot: () -> Unit,
     onCancelUnrootReboot: () -> Unit,
     onRebootAnyway: () -> Unit,
     onExportLog: () -> Unit,
 ) {
     val context = LocalContext.current
+    val bootImagePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri != null) onImportBootImage(uri)
+    }
     var showUnrootDialog by remember { mutableStateOf(false) }
 
     @Suppress("DEPRECATION")
@@ -292,6 +302,16 @@ private fun MainScreen(
             }
 
             Spacer(modifier = Modifier.height(20.dp))
+
+            OutlinedButton(
+                onClick = { bootImagePicker.launch(arrayOf("*/*")) },
+                enabled = !state.busy,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Text("Import boot/factory image for an unsupported Pixel")
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Action button: Unroot & Reboot when installed, Install when ready
             if (state.phase == InstallPhase.Installed) {

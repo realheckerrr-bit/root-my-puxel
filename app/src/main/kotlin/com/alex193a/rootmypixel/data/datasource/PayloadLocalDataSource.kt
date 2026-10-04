@@ -14,6 +14,9 @@ import java.io.FileOutputStream
 open class PayloadLocalDataSource(private val context: Context) {
     private val json = Json { ignoreUnknownKeys = true }
 
+    val contentResolver
+        get() = context.contentResolver
+
     /**
      * Read the bundled profiles.json from assets and return parsed profiles.
      */
