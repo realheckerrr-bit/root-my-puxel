@@ -240,10 +240,13 @@ def main() -> None:
             raise FileNotFoundError(f"template missing for {codename}: {template_dir}")
         target = f"{codename}-{args.build_display}"
         (targets_dir / target).mkdir(parents=True, exist_ok=True)
-        (targets_dir / target / "target.h").write_text(
-            target_header(codename, target, args.build_display, release, family, symbols, template),
-            encoding="utf-8",
-        )
+        try:
+            header = target_header(codename, target, args.build_display, release, family, symbols, template)
+        except KeyError:
+            interesting = sorted(name for name in symbols if "ashmem" in name or "configfs" in name)
+            print(f"{target}: ashmem/configfs symbols found: {interesting}", flush=True)
+            raise
+        (targets_dir / target / "target.h").write_text(header, encoding="utf-8")
         records[target] = {
             "codename": codename,
             "kernelRelease": release,
