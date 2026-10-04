@@ -1,0 +1,29 @@
+{
+  "builds": {
+    "cp41": {
+      "display": "CP41.260831.007.A3",
+      "imageBase": "https://dl.google.com/developers/android/cinnamonbun/images/factory",
+      "images": [
+        ["bluejay", "bluejay_beta-cp41.260831.007.a3-factory-fc96b9f5.zip"],
+        ["panther", "panther_beta-cp41.260831.007.a3-factory-ddf6ddc6.zip"],
+        ["cheetah", "cheetah_beta-cp41.260831.007.a3-factory-88288cae.zip"],
+        ["lynx", "lynx_beta-cp41.260831.007.a3-factory-b2bec6e1.zip"],
+        ["felix", "felix_beta-cp41.260831.007.a3-factory-4cf417ea.zip"],
+        ["tangorpro", "tangorpro_beta-cp41.260831.007.a3-factory-699fd686.zip"],
+        ["shiba", "shiba_beta-cp41.260831.007.a3-factory-f626642d.zip"],
+        ["husky", "husky_beta-cp41.260831.007.a3-factory-75f18764.zip"],
+        ["akita", "akita_beta-cp41.260831.007.a3-factory-f7b20013.zip"],
+        ["tokay", "tokay_beta-cp41.260831.007.a3-factory-52b3129a.zip"],
+        ["caiman", "caiman_beta-cp41.260831.007.a3-factory-660d6e9f.zip"],
+        ["komodo", "komodo_beta-cp41.260831.007.a3-factory-3ea7e175.zip"],
+        ["comet", "comet_beta-cp41.260831.007.a3-factory-3875e604.zip"],
+        ["tegu", "tegu_beta-cp41.260831.007.a3-factory-890409d9.zip"],
+        ["frankel", "frankel_beta-cp41.260831.007.a3-factory-54e153ef.zip"],
+        ["blazer", "blazer_beta-cp41.260831.007.a3-factory-f0744156.zip"],
+        ["mustang", "mustang_beta-cp41.260831.007.a3-factory-108c613a.zip"],
+        ["rango", "rango_beta-cp41.260831.007.a3-factory-915a2d43.zip"],
+        ["stallion", "stallion_beta-cp41.260831.007.a3-factory-dbcbbfca.zip"]
+      ]
+    }
+  }
+}

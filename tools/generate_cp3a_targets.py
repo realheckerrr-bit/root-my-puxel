@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Generate exact CP3A target headers from official Pixel boot images.
+"""Generate exact target headers from official Pixel boot images.
 
 The factory archives are intentionally not checked into the repository.  This
 tool consumes boot.img files extracted from those archives, resolves kallsyms
@@ -131,7 +131,7 @@ def value(symbols: dict[str, int], *names: str) -> int:
     raise KeyError(f"missing symbols: {', '.join(names)}")
 
 
-def target_header(codename: str, target: str, release: str, family: int, symbols: dict[str, int], template: str) -> str:
+def target_header(codename: str, target: str, build_display: str, release: str, family: int, symbols: dict[str, int], template: str) -> str:
     ioctl = value(symbols, "ashmem_ioctl")
     open_ = value(symbols, "ashmem_open")
     if symbols.get("ashmem_fops", 0):
@@ -177,8 +177,8 @@ def target_header(codename: str, target: str, release: str, family: int, symbols
     }
 
     lines = [
-        f"/* Pixel target {codename}, CP3A.260905.009. */",
-        f"/* Kernel: {release}; offsets resolved from the official CP3A boot image. */",
+        f"/* Pixel target {codename}, {build_display}. */",
+        f"/* Kernel: {release}; offsets resolved from the official {build_display} boot image. */",
         "",
         f'#include "../{template}/target.h"',
         "",
@@ -191,9 +191,9 @@ def target_header(codename: str, target: str, release: str, family: int, symbols
         "",
         "#undef BUILD_FINGERPRINT",
         "#define BUILD_FINGERPRINT " + "\\",
-        '  "google/' + codename + "/" + codename + ':17/CP3A.260905.009/16091614:user/release-keys"',
+        '  "google/' + codename + "/" + codename + ':17/' + build_display + '/generated:user/release-keys"',
         "",
-        "/* Exact CP3A.260905.009 offsets from KIMAGE_TEXT_BASE. */",
+        f"/* Exact {build_display} offsets from KIMAGE_TEXT_BASE. */",
     ]
     ordered = [
         "ASHMEM_MISC_FOPS_OFF", "ASHMEM_FOPS_OFF", "ASHMEM_IOCTL_OFF", "ASHMEM_COMPAT_IOCTL_OFF",
@@ -218,7 +218,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--boot-cache", type=Path, required=True)
     parser.add_argument("--finder", default="kallsyms-finder")
-    parser.add_argument("--output-json", type=Path, default=Path("/tmp/cp3a-offsets.json"))
+    parser.add_argument("--build-display", default="CP3A.260905.009")
+    parser.add_argument("--output-json", type=Path, default=Path("/tmp/generated-offsets.json"))
     parser.add_argument("--repo-root", type=Path, default=Path(__file__).resolve().parents[1])
     args = parser.parse_args()
 
@@ -226,7 +227,7 @@ def main() -> None:
     records: dict[str, dict[str, object]] = {}
     for boot_path in sorted(args.boot_cache.glob("*.boot.img")):
         codename = boot_path.name.removesuffix(".boot.img")
-        kernel_path = Path("/tmp") / f"{codename}.cp3a.kernel"
+        kernel_path = Path("/tmp") / f"{codename}.{args.build_display}.kernel"
         boot_data = boot_path.read_bytes()
         kernel_data = extract_kernel(boot_data)
         del boot_data
@@ -237,17 +238,19 @@ def main() -> None:
         template_dir = targets_dir / template
         if not template_dir.exists():
             raise FileNotFoundError(f"template missing for {codename}: {template_dir}")
-        target = f"{codename}-CP3A.260905.009"
-        if target != "cheetah-CP3A.260905.009":
-            (targets_dir / target).mkdir(parents=True, exist_ok=True)
-            (targets_dir / target / "target.h").write_text(
-                target_header(codename, target, release, family, symbols, template),
-                encoding="utf-8",
-            )
+        target = f"{codename}-{args.build_display}"
+        (targets_dir / target).mkdir(parents=True, exist_ok=True)
+        (targets_dir / target / "target.h").write_text(
+            target_header(codename, target, args.build_display, release, family, symbols, template),
+            encoding="utf-8",
+        )
         records[target] = {
             "codename": codename,
             "kernelRelease": release,
+            "kernelReleasePrefix": release.split("-g", 1)[0],
+            "buildDisplay": args.build_display,
             "family": family,
+            "kmi": "android14-6.1" if family == 61 else "android15-6.6",
             "symbolCount": len(symbols),
         }
         print(f"{target}: {release} family={family} symbols={len(symbols)}")

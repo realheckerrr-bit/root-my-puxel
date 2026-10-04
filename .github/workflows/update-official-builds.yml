@@ -1,0 +1,90 @@
+name: Generate and release official Pixel build targets
+
+on:
+  workflow_dispatch:
+    inputs:
+      build:
+        description: Official Android 17 factory build to add
+        required: true
+        type: choice
+        options:
+          - cp41
+        default: cp41
+      release_tag:
+        description: Git tag that starts the APK release workflow
+        required: true
+        type: string
+        default: cp41-260831-007-a3
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    name: Generate exact kernel targets
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install kernel symbol extractor
+        run: python -m pip install --upgrade vmlinux-to-elf
+
+      - name: Read build metadata
+        id: metadata
+        env:
+          BUILD: ${{ inputs.build }}
+        run: |
+          DISPLAY=$(python tools/read_official_build.py tools/official_pixel_builds.json "$BUILD")
+          echo "display=$DISPLAY" >> "$GITHUB_OUTPUT"
+          echo "Official build: $DISPLAY"
+
+      - name: Extract boot images from official factory archives
+        env:
+          BUILD: ${{ inputs.build }}
+        run: |
+          python tools/download_factory_boot.py \
+            --manifest tools/official_pixel_builds.json \
+            --build "$BUILD" \
+            --out "$RUNNER_TEMP/official-boots"
+
+      - name: Resolve symbols and generate target headers
+        run: |
+          python tools/generate_cp3a_targets.py \
+            --boot-cache "$RUNNER_TEMP/official-boots" \
+            --build-display "${{ steps.metadata.outputs.display }}" \
+            --output-json "$RUNNER_TEMP/generated-offsets.json"
+          python tools/merge_generated_profiles.py \
+            --generated "$RUNNER_TEMP/generated-offsets.json" \
+            --profiles app/src/main/assets/profiles.json
+
+      - name: Build every catalog target and run tests
+        run: |
+          chmod +x ./gradlew ./build-all.sh
+          ./build-all.sh
+          ./gradlew testDebugUnitTest --stacktrace
+
+      - name: Commit generated target catalog
+        env:
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/src/main/assets/profiles.json Root-My-Pixel-Payloads/src/targets
+          git diff --cached --quiet || git commit -m "Add ${{ steps.metadata.outputs.display }} kernel targets"
+          git push origin HEAD:main
+          if git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "tag already exists: $RELEASE_TAG" >&2
+            exit 1
+          fi
+          git tag -a "$RELEASE_TAG" -m "Release ${{ steps.metadata.outputs.display }} targets"
+          git push origin "$RELEASE_TAG"
