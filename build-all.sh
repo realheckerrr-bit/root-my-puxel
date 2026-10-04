@@ -61,8 +61,28 @@ TARGETS=(
   "lynx-CP2A.260705.006"           # Pixel 7a
   "cheetah-CP2A.260705.006"        # Pixel 7 Pro
   "cheetah-CP3A.260905.009"        # Pixel 7 Pro (September 2026)
+  "akita-CP3A.260905.009"          # Pixel 8a (September 2026)
+  "blazer-CP3A.260905.009"         # Pixel 10 Pro (September 2026)
+  "bluejay-CP3A.260905.009"        # Pixel 6a (September 2026)
+  "caiman-CP3A.260905.009"         # Pixel 9 Pro (September 2026)
+  "comet-CP3A.260905.009"          # Pixel 9 Pro Fold (September 2026)
+  "felix-CP3A.260905.009"          # Pixel Fold (September 2026)
+  "frankel-CP3A.260905.009"        # Pixel 10 (September 2026)
+  "husky-CP3A.260905.009"          # Pixel 8 Pro (September 2026)
+  "komodo-CP3A.260905.009"         # Pixel 9 Pro XL (September 2026)
+  "lynx-CP3A.260905.009"           # Pixel 7a (September 2026)
+  "mustang-CP3A.260905.009"        # Pixel 10 Pro XL (September 2026)
+  "oriole-CP3A.260905.009"         # Pixel 6 (September 2026)
   "panther-CP2A.260705.006"        # Pixel 7
+  "panther-CP3A.260905.009"        # Pixel 7 (September 2026)
   "panther-BP2A.250705.008"        # Pixel 7 (older build)
+  "rango-CP3A.260905.009"          # Pixel 10 Pro Fold (September 2026)
+  "raven-CP3A.260905.009"          # Pixel 6 Pro (September 2026)
+  "shiba-CP3A.260905.009"          # Pixel 8 (September 2026)
+  "stallion-CP3A.260905.009"       # Pixel 10a (September 2026)
+  "tangorpro-CP3A.260905.009"      # Pixel Tablet (September 2026)
+  "tegu-CP3A.260905.009"           # Pixel 9a (September 2026)
+  "tokay-CP3A.260905.009"          # Pixel 9 (September 2026)
   "bluejay-CP1A.260405.005"        # Pixel 6a
   "bluejay-CP2A.260705.006"        # Pixel 6a (newer build)
   "oriole-CP2A.260705.006"         # Pixel 6

