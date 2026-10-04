@@ -519,6 +519,126 @@
       "buildDisplay": "CP41.260831.007.A3",
       "exploitAsset": "exploits/tokay-CP41.260831.007.A3.so",
       "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "akita-DP11.260918.006",
+      "codename": "akita",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/akita-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "bluejay-DP11.260918.006",
+      "codename": "bluejay",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/bluejay-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "caiman-DP11.260918.006",
+      "codename": "caiman",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/caiman-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "cheetah-DP11.260918.006",
+      "codename": "cheetah",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/cheetah-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "comet-DP11.260918.006",
+      "codename": "comet",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/comet-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "felix-DP11.260918.006",
+      "codename": "felix",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/felix-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "husky-DP11.260918.006",
+      "codename": "husky",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/husky-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "komodo-DP11.260918.006",
+      "codename": "komodo",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/komodo-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "lynx-DP11.260918.006",
+      "codename": "lynx",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/lynx-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "panther-DP11.260918.006",
+      "codename": "panther",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/panther-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "shiba-DP11.260918.006",
+      "codename": "shiba",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/shiba-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "stallion-DP11.260918.006",
+      "codename": "stallion",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/stallion-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "tangorpro-DP11.260918.006",
+      "codename": "tangorpro",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/tangorpro-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "tegu-DP11.260918.006",
+      "codename": "tegu",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/tegu-DP11.260918.006.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "tokay-DP11.260918.006",
+      "codename": "tokay",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "DP11.260918.006",
+      "exploitAsset": "exploits/tokay-DP11.260918.006.so",
+      "kmi": "android14-6.1"
     }
   ]
 }
