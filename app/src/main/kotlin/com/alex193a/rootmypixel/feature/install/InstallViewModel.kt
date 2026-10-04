@@ -463,6 +463,18 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
 
             rememberKaslrBase(finalLog)
 
+            /*
+             * The native payload can create the daemon before a later
+             * bookkeeping/SELinux check reports failure.  Do not throw away
+             * a usable root transport in that case: verify both the daemon's
+             * session workspace and an actual uid=0 command, then continue
+             * with KernelSU installation.
+             */
+            if (hasUsableRootDaemon(helper, artifactPaths)) {
+                appendLog("[+] Existing root daemon verified after payload exit")
+                return Result.Success(Unit)
+            }
+
             if (exitCode != 0) {
                 return Result.Error(
                     PayloadExecutionError(
@@ -549,6 +561,24 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
             knownKaslrBase = base
             appendLog("[+] KASLR base saved for Retry: $base")
         }
+    }
+
+    private fun hasUsableRootDaemon(
+        helper: File,
+        artifactPaths: TempArtifactPaths,
+    ): Boolean {
+        val workspace = runCatching {
+            runHelper(helper, artifactPaths, "--daemon-work-dir")
+        }.getOrNull() ?: return false
+        if (workspace.code != 0 || workspace.output.lineSequence()
+                .none { it.trim() == artifactPaths.workDir }
+        ) {
+            return false
+        }
+        val rootProbe = runCatching {
+            runHelper(helper, artifactPaths, "-c", ROOT_ID_COMMAND)
+        }.getOrNull() ?: return false
+        return RootShellProbe.isRoot(rootProbe.code, rootProbe.output)
     }
 
     private fun hasShizukuPermission(): Boolean {
