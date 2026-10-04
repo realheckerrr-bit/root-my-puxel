@@ -20,6 +20,27 @@
         ["tegu", "tegu_beta-cp41.260831.007.a3-factory-890409d9.zip"],
         ["stallion", "stallion_beta-cp41.260831.007.a3-factory-dbcbbfca.zip"]
       ]
+    },
+    "dp11": {
+      "display": "DP11.260918.006",
+      "imageBase": "https://dl.google.com/developers/android/cinnamonbun/images/factory",
+      "images": [
+        ["bluejay", "bluejay_beta-dp11.260918.006-factory-0bff776a.zip"],
+        ["panther", "panther_beta-dp11.260918.006-factory-a2f235d7.zip"],
+        ["cheetah", "cheetah_beta-dp11.260918.006-factory-c8d9b46c.zip"],
+        ["lynx", "lynx_beta-dp11.260918.006-factory-fa75bb5c.zip"],
+        ["felix", "felix_beta-dp11.260918.006-factory-fdcd4857.zip"],
+        ["tangorpro", "tangorpro_beta-dp11.260918.006-factory-8dc23998.zip"],
+        ["shiba", "shiba_beta-dp11.260918.006-factory-f1d933e1.zip"],
+        ["husky", "husky_beta-dp11.260918.006-factory-a2560128.zip"],
+        ["akita", "akita_beta-dp11.260918.006-factory-219fdba9.zip"],
+        ["tokay", "tokay_beta-dp11.260918.006-factory-0cbe4ea7.zip"],
+        ["caiman", "caiman_beta-dp11.260918.006-factory-b73f120b.zip"],
+        ["komodo", "komodo_beta-dp11.260918.006-factory-5bc06087.zip"],
+        ["comet", "comet_beta-dp11.260918.006-factory-de59e054.zip"],
+        ["tegu", "tegu_beta-dp11.260918.006-factory-3dd0e72b.zip"],
+        ["stallion", "stallion_beta-dp11.260918.006-factory-fb78cc28.zip"]
+      ]
     }
   }
 }

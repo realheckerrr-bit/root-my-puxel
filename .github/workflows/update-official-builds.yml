@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - cp41
+          - dp11
         default: cp41
       release_tag:
         description: Git tag that starts the APK release workflow
