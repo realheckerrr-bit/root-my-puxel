@@ -102,6 +102,45 @@ jobs:
           print(f'Validated {len(profiles)} Pixel profiles and target headers')
           PY
 
+      - name: Audit CP3A family-critical offsets
+        run: |
+          python3 - <<'PY'
+          import json
+          import re
+          from pathlib import Path
+
+          profiles = json.loads(
+              (Path('app/src/main/assets/profiles.json')).read_text()
+          )['profiles']
+          errors = []
+          for profile in profiles:
+              if not profile['profileId'].endswith('CP3A.260905.009'):
+                  continue
+              header = Path('Root-My-Pixel-Payloads/src/targets') / profile['profileId'] / 'target.h'
+              text = header.read_text()
+              match = re.search(
+                  r'^#define\s+SELINUX_ENFORCING_OFF\s+(0x[0-9a-fA-F]+)ULL',
+                  text,
+                  re.MULTILINE,
+              )
+              expected = {
+                  '6.1.': '0x0225b448',
+                  '6.6.': '0x0237a0e8',
+              }.get(profile['kernelRelease'][:4])
+              if expected is None:
+                  errors.append(f"{profile['profileId']}: unknown kernel family")
+              elif not match or match.group(1).lower() != expected:
+                  actual = match.group(1) if match else '<missing>'
+                  errors.append(
+                      f"{profile['profileId']}: SELINUX_ENFORCING_OFF {actual}, "
+                      f"expected {expected}"
+                  )
+
+          if errors:
+              raise SystemExit('CP3A offset audit failed:\n' + '\n'.join(errors))
+          print('Validated family-critical SELinux offsets for all CP3A profiles')
+          PY
+
       - name: Build all payloads and APK
         run: ./build-all.sh
 
