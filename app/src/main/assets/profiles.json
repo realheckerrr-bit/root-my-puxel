@@ -399,6 +399,126 @@
       "buildDisplay": "CD1A.260618.001.C3",
       "exploitAsset": "exploits/yogi-CD1A.260618.001.C3.so",
       "kmi": "android16-6.12"
+    },
+    {
+      "profileId": "akita-CP41.260831.007.A3",
+      "codename": "akita",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/akita-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "bluejay-CP41.260831.007.A3",
+      "codename": "bluejay",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/bluejay-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "caiman-CP41.260831.007.A3",
+      "codename": "caiman",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/caiman-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "cheetah-CP41.260831.007.A3",
+      "codename": "cheetah",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/cheetah-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "comet-CP41.260831.007.A3",
+      "codename": "comet",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/comet-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "felix-CP41.260831.007.A3",
+      "codename": "felix",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/felix-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "husky-CP41.260831.007.A3",
+      "codename": "husky",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/husky-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "komodo-CP41.260831.007.A3",
+      "codename": "komodo",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/komodo-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "lynx-CP41.260831.007.A3",
+      "codename": "lynx",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/lynx-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "panther-CP41.260831.007.A3",
+      "codename": "panther",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/panther-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "shiba-CP41.260831.007.A3",
+      "codename": "shiba",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/shiba-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "stallion-CP41.260831.007.A3",
+      "codename": "stallion",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/stallion-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "tangorpro-CP41.260831.007.A3",
+      "codename": "tangorpro",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/tangorpro-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "tegu-CP41.260831.007.A3",
+      "codename": "tegu",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/tegu-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
+    },
+    {
+      "profileId": "tokay-CP41.260831.007.A3",
+      "codename": "tokay",
+      "kernelRelease": "6.1.172-android14-11",
+      "buildDisplay": "CP41.260831.007.A3",
+      "exploitAsset": "exploits/tokay-CP41.260831.007.A3.so",
+      "kmi": "android14-6.1"
     }
   ]
 }
