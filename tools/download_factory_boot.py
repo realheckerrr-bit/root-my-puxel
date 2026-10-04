@@ -20,6 +20,8 @@ from pathlib import Path
 
 
 EOCD = b"PK\x05\x06"
+ZIP64_EOCD = b"PK\x06\x06"
+ZIP64_LOCATOR = b"PK\x06\x07"
 CENTRAL = b"PK\x01\x02"
 LOCAL = b"PK\x03\x04"
 
@@ -61,10 +63,29 @@ def central_directory(url: str, archive_start: int, archive_size: int) -> list[d
     _, disk, cd_disk, disk_entries, entries, cd_size, cd_offset, comment_size = struct.unpack(
         "<4s4H2IH", eocd
     )
-    if disk or cd_disk or disk_entries != entries:
+    if disk or cd_disk:
         raise RuntimeError("multi-disk ZIP is not supported")
-    if cd_size == 0xFFFFFFFF or cd_offset == 0xFFFFFFFF:
-        raise RuntimeError("ZIP64 central directories are not supported")
+    if (
+        disk_entries == 0xFFFF
+        or entries == 0xFFFF
+        or cd_size == 0xFFFFFFFF
+        or cd_offset == 0xFFFFFFFF
+    ):
+        locator_at = tail.rfind(ZIP64_LOCATOR)
+        if locator_at < 0:
+            raise RuntimeError("ZIP64 locator not found")
+        zip64_offset = struct.unpack_from("<Q", tail, locator_at + 8)[0]
+        zip64 = request(url, archive_start + zip64_offset, archive_start + zip64_offset + 55)
+        if zip64[:4] != ZIP64_EOCD:
+            raise RuntimeError("invalid ZIP64 end record")
+        disk = struct.unpack_from("<I", zip64, 16)[0]
+        cd_disk = struct.unpack_from("<I", zip64, 20)[0]
+        disk_entries = struct.unpack_from("<Q", zip64, 24)[0]
+        entries = struct.unpack_from("<Q", zip64, 32)[0]
+        cd_size = struct.unpack_from("<Q", zip64, 40)[0]
+        cd_offset = struct.unpack_from("<Q", zip64, 48)[0]
+        if disk or cd_disk or disk_entries != entries:
+            raise RuntimeError("multi-disk ZIP is not supported")
     central = request(
         url,
         archive_start + cd_offset,
@@ -79,6 +100,27 @@ def central_directory(url: str, archive_start: int, archive_size: int) -> list[d
         _, _, _, flags, method, _, _, crc, compressed, uncompressed, name_len, extra_len, comment_len, _, _, _, local_offset = fields
         name_start = pos + 46
         name = central[name_start : name_start + name_len].decode("utf-8", "replace")
+        extra = central[name_start + name_len : name_start + name_len + extra_len]
+        if compressed == 0xFFFFFFFF or uncompressed == 0xFFFFFFFF or local_offset == 0xFFFFFFFF:
+            zip64_values: list[int] = []
+            extra_pos = 0
+            while extra_pos + 4 <= len(extra):
+                extra_id, extra_size = struct.unpack_from("<HH", extra, extra_pos)
+                payload = extra[extra_pos + 4 : extra_pos + 4 + extra_size]
+                if extra_id == 0x0001:
+                    for value_pos in range(0, len(payload) - 7, 8):
+                        zip64_values.append(struct.unpack_from("<Q", payload, value_pos)[0])
+                    break
+                extra_pos += 4 + extra_size
+            value_pos = 0
+            if uncompressed == 0xFFFFFFFF:
+                uncompressed = zip64_values[value_pos]
+                value_pos += 1
+            if compressed == 0xFFFFFFFF:
+                compressed = zip64_values[value_pos]
+                value_pos += 1
+            if local_offset == 0xFFFFFFFF:
+                local_offset = zip64_values[value_pos]
         result.append(
             {
                 "name": name,
