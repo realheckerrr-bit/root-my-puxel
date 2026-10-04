@@ -216,8 +216,23 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
                 }
                 appendLog("[*] Using Shizuku shell access: $useShizuku")
 
-                artifactSession = prepareArtifactSession()
-                val artifactPaths = artifactSession.paths
+                val genericRuntime = payloads.targetConfig != null
+                artifactSession = if (genericRuntime) {
+                    /*
+                     * The generic fallback is built from the pre-session
+                     * runtime payloads, which hard-code /data/local/tmp for
+                     * the daemon, su client, and socket.  Keep exact static
+                     * payloads on isolated sessions; use the legacy layout
+                     * only for this explicit compatibility path.
+                     */
+                    null
+                } else {
+                    prepareArtifactSession()
+                }
+                val artifactPaths = artifactSession?.paths ?: TempArtifactPaths.legacy()
+                if (genericRuntime) {
+                    appendLog("[!] Generic runtime payload uses legacy /data/local/tmp workspace")
+                }
                 appendLog("[*] Temporary workspace: ${artifactPaths.workDir}")
 
                 setPhase(InstallPhase.Exploiting, app.getString(R.string.status_exploit))
@@ -240,12 +255,14 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
                         return@launch
                     }
                 }
-                check(
-                    artifactSessionStore.markState(
-                        artifactPaths.sessionId!!,
-                        TempArtifactSessionState.Active,
-                    ),
-                ) { "Unable to persist active temporary artifact session" }
+                artifactPaths.sessionId?.let { sessionId ->
+                    check(
+                        artifactSessionStore.markState(
+                            sessionId,
+                            TempArtifactSessionState.Active,
+                        ),
+                    ) { "Unable to persist active temporary artifact session" }
+                }
 
                 if (permissiveOnly) {
                     setPhase(InstallPhase.Installed, "SELinux permissive + root shell ready")
