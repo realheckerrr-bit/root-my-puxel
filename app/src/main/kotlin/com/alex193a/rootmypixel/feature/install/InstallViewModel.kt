@@ -1337,7 +1337,16 @@ class InstallViewModel(application: Application) : AndroidViewModel(application)
         private const val COMMAND_TIMEOUT_CODE = 124
         private const val ROOT_PROBE_TIMEOUT_SECONDS = 10L
         private const val ROOT_ID_COMMAND = "id -u"
-        private const val MAX_EXPLOIT_RETRIES = 4
+        /*
+         * A 6.1 TCP route is probabilistic: one fresh payload process gets
+         * one allocator/race window, and a miss is not repaired by rerunning
+         * the route inside the same process.  Four process attempts were too
+         * small for real devices (the native payload and upstream guidance
+         * both expect that users may need many attempts).  Keep retries
+         * automatic so a transient miss does not look like a terminal build
+         * failure, while still bounding the run for the user.
+         */
+        private const val MAX_EXPLOIT_RETRIES = 20
         private const val KASLR_RETRY_DELAY_MILLIS = 750L
         private val LOG_POLL_INTERVAL = 250.milliseconds
         private const val RESUKISU_PACKAGE = "com.resukisu.resukisu"
