@@ -15,7 +15,7 @@ on:
         description: Git tag that starts the APK release workflow
         required: true
         type: string
-        default: cp41-260831-007-a3
+        default: dp11-261030-003
 
 permissions:
   contents: write
@@ -80,7 +80,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app/src/main/assets/profiles.json Root-My-Pixel-Payloads/src/targets
+          git add app/src/main/assets/profiles.json app/src/main/assets/exploits Root-My-Pixel-Payloads/src/targets
           git diff --cached --quiet || git commit -m "Add ${{ steps.metadata.outputs.display }} kernel targets"
           git push origin HEAD:main
           if git rev-parse "$RELEASE_TAG" >/dev/null 2>&1; then

@@ -22,24 +22,24 @@
       ]
     },
     "dp11": {
-      "display": "DP11.260918.006",
+      "display": "DP11.261030.003",
       "imageBase": "https://dl.google.com/developers/android/cinnamonbun/images/factory",
       "images": [
-        ["bluejay", "bluejay_beta-dp11.260918.006-factory-0bff776a.zip"],
-        ["panther", "panther_beta-dp11.260918.006-factory-a2f235d7.zip"],
-        ["cheetah", "cheetah_beta-dp11.260918.006-factory-c8d9b46c.zip"],
-        ["lynx", "lynx_beta-dp11.260918.006-factory-fa75bb5c.zip"],
-        ["felix", "felix_beta-dp11.260918.006-factory-fdcd4857.zip"],
-        ["tangorpro", "tangorpro_beta-dp11.260918.006-factory-8dc23998.zip"],
-        ["shiba", "shiba_beta-dp11.260918.006-factory-f1d933e1.zip"],
-        ["husky", "husky_beta-dp11.260918.006-factory-a2560128.zip"],
-        ["akita", "akita_beta-dp11.260918.006-factory-219fdba9.zip"],
-        ["tokay", "tokay_beta-dp11.260918.006-factory-0cbe4ea7.zip"],
-        ["caiman", "caiman_beta-dp11.260918.006-factory-b73f120b.zip"],
-        ["komodo", "komodo_beta-dp11.260918.006-factory-5bc06087.zip"],
-        ["comet", "comet_beta-dp11.260918.006-factory-de59e054.zip"],
-        ["tegu", "tegu_beta-dp11.260918.006-factory-3dd0e72b.zip"],
-        ["stallion", "stallion_beta-dp11.260918.006-factory-fb78cc28.zip"]
+        ["bluejay", "bluejay_beta-dp11.261030.003-factory-2d4a9734.zip"],
+        ["panther", "panther_beta-dp11.261030.003-factory-8f718b3a.zip"],
+        ["cheetah", "cheetah_beta-dp11.261030.003-factory-34120c1d.zip"],
+        ["lynx", "lynx_beta-dp11.261030.003-factory-a3e7520b.zip"],
+        ["felix", "felix_beta-dp11.261030.003-factory-7490a198.zip"],
+        ["tangorpro", "tangorpro_beta-dp11.261030.003-factory-3ee3196e.zip"],
+        ["shiba", "shiba_beta-dp11.261030.003-factory-e981c4f5.zip"],
+        ["husky", "husky_beta-dp11.261030.003-factory-1428f4f7.zip"],
+        ["akita", "akita_beta-dp11.261030.003-factory-a2b281a5.zip"],
+        ["tokay", "tokay_beta-dp11.261030.003-factory-268ea57d.zip"],
+        ["caiman", "caiman_beta-dp11.261030.003-factory-d91011d6.zip"],
+        ["komodo", "komodo_beta-dp11.261030.003-factory-29099706.zip"],
+        ["comet", "comet_beta-dp11.261030.003-factory-e72530d8.zip"],
+        ["tegu", "tegu_beta-dp11.261030.003-factory-639e8f85.zip"],
+        ["stallion", "stallion_beta-dp11.261030.003-factory-9f35b828.zip"]
       ]
     }
   }
