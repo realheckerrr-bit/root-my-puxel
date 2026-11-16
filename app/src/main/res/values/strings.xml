@@ -13,6 +13,8 @@
     <string name="developed_by">DEVELOPED BY</string>
     <string name="missing_manager_title">ReSukiSU Manager not installed</string>
     <string name="missing_manager_description">You need the ReSukiSU Manager app to manage root permissions</string>
+    <string name="action_install_shizuku">Install Shizuku (bundled)</string>
+    <string name="action_install_manager_bundled">Install ReSukiSU Manager (bundled)</string>
 
     <!-- Actions -->
     <string name="action_install">Install ReSukiSU</string>

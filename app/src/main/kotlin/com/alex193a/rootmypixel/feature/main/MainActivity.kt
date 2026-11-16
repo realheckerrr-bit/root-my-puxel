@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Bolt
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.GetApp
 import androidx.compose.material.icons.rounded.OpenInBrowser
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Refresh
@@ -75,6 +76,7 @@ import com.alex193a.rootmypixel.domain.model.InstallPhase
 import com.alex193a.rootmypixel.domain.model.InstallUiState
 import com.alex193a.rootmypixel.ui.components.UnrootIncompleteSheet
 import com.alex193a.rootmypixel.ui.theme.RootMyPixelTheme
+import com.alex193a.rootmypixel.utils.CompanionApks
 
 class MainActivity : ComponentActivity() {
     private val installViewModel by viewModels<MainViewModel>()
@@ -252,7 +254,7 @@ private fun MainScreen(
             }
 
             // Shizuku status
-            ShizukuStatusCard(available = shizukuAvailable)
+            ShizukuStatusCard(available = shizukuAvailable, context = context)
 
             Spacer(modifier = Modifier.height(8.dp))
 
@@ -433,7 +435,7 @@ private fun UptimeErrorCard(exceeded: Boolean) {
 }
 
 @Composable
-private fun ShizukuStatusCard(available: Boolean) {
+private fun ShizukuStatusCard(available: Boolean, context: android.content.Context) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = MaterialTheme.shapes.medium,
@@ -444,33 +446,51 @@ private fun ShizukuStatusCard(available: Boolean) {
                 MaterialTheme.colorScheme.surfaceContainerHighest,
         ),
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(
-                imageVector = if (available) Icons.Rounded.Shield else Icons.Rounded.Warning,
-                contentDescription = null,
-                modifier = Modifier.size(20.dp),
-                tint = if (available)
-                    MaterialTheme.colorScheme.primary
-                else
-                    MaterialTheme.colorScheme.error
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(
-                text = if (available) {
-                    stringResource(R.string.shikuzu_shell_active)
-                } else {
-                    stringResource(
-                        R.string.shikuzu_shell_not_active
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = if (available) Icons.Rounded.Shield else Icons.Rounded.Warning,
+                    contentDescription = null,
+                    modifier = Modifier.size(20.dp),
+                    tint = if (available)
+                        MaterialTheme.colorScheme.primary
+                    else
+                        MaterialTheme.colorScheme.error
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (available) {
+                        stringResource(R.string.shikuzu_shell_active)
+                    } else {
+                        stringResource(
+                            R.string.shikuzu_shell_not_active
+                        )
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 12.sp
+                )
+            }
+            if (!available) {
+                Spacer(modifier = Modifier.height(8.dp))
+                OutlinedButton(
+                    onClick = { CompanionApks.installShizuku(context) },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(
+                        Icons.Rounded.GetApp,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
                     )
-                },
-                style = MaterialTheme.typography.bodyMedium,
-                fontSize = 12.sp
-            )
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(stringResource(R.string.action_install_shizuku))
+                }
+            }
         }
     }
 }
@@ -511,22 +531,16 @@ private fun ReSukiSuManagerCard(installed: Boolean, context: android.content.Con
             )
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
-                onClick = {
-                    val intent = Intent(Intent.ACTION_VIEW).apply {
-                        data = "https://github.com/ReSukiSU/ReSukiSU/actions/runs/31654472450".toUri()
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    }
-                    context.startActivity(intent)
-                },
+                onClick = { CompanionApks.installResukiSu(context) },
                 modifier = Modifier.fillMaxWidth(),
             ) {
                 Icon(
-                    Icons.Rounded.OpenInBrowser,
+                    Icons.Rounded.GetApp,
                     contentDescription = null,
                     modifier = Modifier.size(18.dp),
                 )
                 Spacer(modifier = Modifier.width(6.dp))
-                Text("Install ReSukiSU Manager")
+                Text(stringResource(R.string.action_install_manager_bundled))
             }
         }
     }
